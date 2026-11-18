@@ -1,29 +1,33 @@
 {
   "project": "FixFlow",
   "version": "1.0",
-  "generated": "2026-11-18",
-  "files": [
-    ".env.example",
-    "AGENTS.md",
-    "DESIGN.md",
-    "README.md",
-    "docs/01-product-requirements.md",
-    "docs/02-technical-requirements.md",
-    "docs/03-app-flow.md",
-    "docs/04-ui-ux-design-brief.md",
-    "docs/05-backend-schema.md",
-    "docs/06-implementation-plan.md",
-    "docs/07-design-references.md",
-    "evals.md",
-    "guardrails.md",
-    "memory.md",
-    "prompts.md",
-    "security.md",
-    "tools.md"
+  "updated": "2026-11-18",
+  "structure": {
+    "contracts": "packages/contracts",
+    "api": "apps/api",
+    "web": "apps/web",
+    "prisma": "prisma"
+  },
+  "modules": [
+    "auth",
+    "shops",
+    "customers",
+    "devices",
+    "repairs",
+    "payments",
+    "inventory",
+    "warranties",
+    "tracking",
+    "dashboard",
+    "audit",
+    "notifications"
   ],
-  "notes": [
-    "Product discovery assumptions are explicitly marked as unvalidated.",
-    "RLS, authorization, rate limiting and secret-handling requirements are included.",
-    "Design reference skills are documented; unavailable skills are not claimed as executed."
+  "security": [
+    "PostgreSQL Row-Level Security (RLS) on all tenant-owned tables",
+    "Dual-layer authorization (API membership + PostgreSQL RLS)",
+    "Strict rate limiting on public and authenticated routes",
+    "Two-factor public repair tracking (Ticket # + Phone Last 4)",
+    "Immutable append-only payment ledger with explicit reversals",
+    "Zero client-side secrets or credentials"
   ]
 }

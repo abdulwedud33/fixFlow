@@ -64,6 +64,10 @@ This file records durable project decisions. Update it when a decision is made o
 | 2026-11-18 | Ethiopia-first, direct-to-business sales | User selected market and commercial goal |
 | 2026-11-18 | PWA first; mobile-phone repair shops first | Keeps MVP narrow and lowers launch cost |
 | 2026-11-18 | Modular monolith + PostgreSQL + RLS | Operational simplicity with strong tenant isolation |
+| 2026-11-18 | Monorepo structure with `@fixflow/contracts`, `@fixflow/api`, and `@fixflow/web` | Enforces zero secret leakage to client and typed contract sharing |
+| 2026-11-18 | Human-readable sequential ticket numbering `FF-YYMM-XXXX` | Unambiguous customer/technician physical ticket traceability |
+| 2026-11-18 | Two-factor public tracking (Ticket # + Phone Last 4) | Prevents enumeration scraping while allowing customer access without accounts |
+| 2026-11-18 | Append-only payment ledger with explicit reversals | Financial integrity and audit compliance |
 
 ## Change protocol
 When changing a decision:

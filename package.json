@@ -1,0 +1,18 @@
+{
+  "name": "fixflow",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:contracts": "npm run build --workspace=@fixflow/contracts",
+    "dev:api": "npm run dev --workspace=@fixflow/api",
+    "dev:web": "npm run dev --workspace=@fixflow/web",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

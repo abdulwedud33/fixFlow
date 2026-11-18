@@ -1,0 +1,482 @@
+// Prisma Schema for FixFlow (Production PostgreSQL)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  owner
+  manager
+  receptionist
+  technician
+}
+
+enum MembershipStatus {
+  invited
+  active
+  suspended
+  removed
+}
+
+enum RepairStatus {
+  RECEIVED
+  DIAGNOSING
+  WAITING_FOR_APPROVAL
+  WAITING_FOR_PARTS
+  IN_PROGRESS
+  COMPLETED
+  READY_FOR_PICKUP
+  COLLECTED
+  CANCELLED
+}
+
+enum RepairPriority {
+  normal
+  urgent
+}
+
+enum DeviceType {
+  phone
+  laptop
+  tablet
+  desktop
+  appliance
+  other
+}
+
+enum NoteType {
+  internal
+  customer_visible
+}
+
+enum PaymentMethod {
+  cash
+  bank_transfer
+  mobile_money
+  card
+  other
+}
+
+enum PaymentStatus {
+  recorded
+  reversed
+  refunded
+}
+
+enum EstimateStatus {
+  draft
+  sent
+  approved
+  rejected
+  superseded
+}
+
+enum WarrantyStatus {
+  active
+  claimed
+  expired
+  voided
+}
+
+enum StockMovementType {
+  purchase
+  repair_usage
+  adjustment
+  return
+}
+
+enum NotificationChannel {
+  sms
+  email
+  in_app
+}
+
+enum NotificationStatus {
+  queued
+  sent
+  delivered
+  failed
+  unknown
+  cancelled
+}
+
+model User {
+  id             String           @id @default(uuid())
+  email          String?          @unique
+  phone          String?          @unique
+  passwordHash   String
+  displayName    String           @map("display_name")
+  isActive       Boolean          @default(true) @map("is_active")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  memberships    ShopMembership[]
+  createdTickets RepairTicket[]   @relation("TicketCreatedBy")
+  statusEvents   RepairStatusEvent[]
+  notes          RepairNote[]
+  assignments    RepairAssignment[] @relation("TechnicianAssigned")
+  createdAssignments RepairAssignment[] @relation("AssignmentCreatedBy")
+  payments       Payment[]
+  estimates      Estimate[]
+  auditEvents    AuditEvent[]
+
+  @@map("users")
+}
+
+model Shop {
+  id          String           @id @default(uuid())
+  name        String
+  slug        String           @unique
+  phone       String
+  email       String?
+  address     String?
+  city        String?          @default("Addis Ababa")
+  countryCode String           @default("ET") @map("country_code")
+  currency    String           @default("ETB")
+  timezone    String           @default("Africa/Addis_Ababa")
+  settings    Json?            @default("{}")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  memberships    ShopMembership[]
+  customers      Customer[]
+  devices        Device[]
+  repairTickets  RepairTicket[]
+  parts          Part[]
+  auditEvents    AuditEvent[]
+  notifications  Notification[]
+
+  @@map("shops")
+}
+
+model ShopMembership {
+  id          String           @id @default(uuid())
+  shopId      String           @map("shop_id")
+  userId      String           @map("user_id")
+  role        UserRole         @default(receptionist)
+  permissions Json?            @default("{}")
+  status      MembershipStatus @default(active)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, userId])
+  @@index([shopId])
+  @@index([userId])
+  @@map("shop_memberships")
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  shopId    String   @map("shop_id")
+  fullName  String   @map("full_name")
+  phone     String
+  email     String?
+  notes     String?
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shop    Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  devices Device[]
+  tickets RepairTicket[]
+
+  @@index([shopId, phone])
+  @@index([shopId, fullName])
+  @@map("customers")
+}
+
+model Device {
+  id           String     @id @default(uuid())
+  shopId       String     @map("shop_id")
+  customerId   String     @map("customer_id")
+  deviceType   DeviceType @default(phone) @map("device_type")
+  brand        String
+  model        String
+  serialNumber String?    @map("serial_number")
+  imei         String?
+  color        String?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  shop     Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tickets  RepairTicket[]
+
+  @@index([shopId, customerId])
+  @@map("devices")
+}
+
+model RepairTicket {
+  id                   String         @id @default(uuid())
+  shopId               String         @map("shop_id")
+  ticketNumber         String         @map("ticket_number")
+  customerId           String         @map("customer_id")
+  deviceId             String         @map("device_id")
+  reportedIssue        String         @map("reported_issue")
+  conditionOnIntake    String?        @map("condition_on_intake")
+  accessoriesReceived  Json?          @default("[]") @map("accessories_received")
+  status               RepairStatus   @default(RECEIVED)
+  priority             RepairPriority @default(normal)
+  estimatedCost        Decimal?       @map("estimated_cost") @db.Decimal(14, 2)
+  finalCost            Decimal?       @map("final_cost") @db.Decimal(14, 2)
+  currency             String         @default("ETB")
+  expectedCompletionAt DateTime?      @map("expected_completion_at")
+  receivedAt           DateTime       @default(now()) @map("received_at")
+  completedAt          DateTime?      @map("completed_at")
+  collectedAt          DateTime?      @map("collected_at")
+  createdBy            String?        @map("created_by")
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+
+  shop          Shop                @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer      Customer            @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  device        Device              @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+  creator       User?               @relation("TicketCreatedBy", fields: [createdBy], references: [id])
+  statusEvents  RepairStatusEvent[]
+  notes         RepairNote[]
+  assignments   RepairAssignment[]
+  estimates     Estimate[]
+  payments      Payment[]
+  partUsages    RepairPartUsage[]
+  warranty      Warranty?
+
+  @@unique([shopId, ticketNumber])
+  @@index([shopId, status, receivedAt(sort: Desc)])
+  @@index([shopId, customerId])
+  @@map("repair_tickets")
+}
+
+model RepairStatusEvent {
+  id             String        @id @default(uuid())
+  shopId         String        @map("shop_id")
+  repairTicketId String        @map("repair_ticket_id")
+  fromStatus     RepairStatus? @map("from_status")
+  toStatus       RepairStatus  @map("to_status")
+  reason         String?
+  actorUserId    String?       @map("actor_user_id")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  ticket RepairTicket @relation(fields: [repairTicketId], references: [id], onDelete: Cascade)
+  actor  User?        @relation(fields: [actorUserId], references: [id])
+
+  @@index([shopId, repairTicketId, createdAt])
+  @@map("repair_status_events")
+}
+
+model RepairNote {
+  id             String   @id @default(uuid())
+  shopId         String   @map("shop_id")
+  repairTicketId String   @map("repair_ticket_id")
+  authorUserId   String?  @map("author_user_id")
+  noteType       NoteType @default(internal) @map("note_type")
+  body           String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  ticket RepairTicket @relation(fields: [repairTicketId], references: [id], onDelete: Cascade)
+  author User?        @relation(fields: [authorUserId], references: [id])
+
+  @@index([shopId, repairTicketId])
+  @@map("repair_notes")
+}
+
+model RepairAssignment {
+  id               String    @id @default(uuid())
+  shopId           String    @map("shop_id")
+  repairTicketId   String    @map("repair_ticket_id")
+  technicianUserId String    @map("technician_user_id")
+  assignedBy       String?   @map("assigned_by")
+  assignedAt       DateTime  @default(now()) @map("assigned_at")
+  unassignedAt     DateTime? @map("unassigned_at")
+
+  ticket     RepairTicket @relation(fields: [repairTicketId], references: [id], onDelete: Cascade)
+  technician User         @relation("TechnicianAssigned", fields: [technicianUserId], references: [id])
+  assigner   User?        @relation("AssignmentCreatedBy", fields: [assignedBy], references: [id])
+
+  @@index([shopId, technicianUserId, unassignedAt])
+  @@map("repair_assignments")
+}
+
+model Estimate {
+  id             String         @id @default(uuid())
+  shopId         String         @map("shop_id")
+  repairTicketId String         @map("repair_ticket_id")
+  version        Int            @default(1)
+  laborAmount    Decimal        @default(0) @map("labor_amount") @db.Decimal(14, 2)
+  partsAmount    Decimal        @default(0) @map("parts_amount") @db.Decimal(14, 2)
+  discountAmount Decimal        @default(0) @map("discount_amount") @db.Decimal(14, 2)
+  totalAmount    Decimal        @map("total_amount") @db.Decimal(14, 2)
+  currency       String         @default("ETB")
+  status         EstimateStatus @default(draft)
+  notes          String?
+  approvedAt     DateTime?      @map("approved_at")
+  createdBy      String?        @map("created_by")
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  ticket  RepairTicket @relation(fields: [repairTicketId], references: [id], onDelete: Cascade)
+  creator User?        @relation(fields: [createdBy], references: [id])
+
+  @@unique([shopId, repairTicketId, version])
+  @@map("estimates")
+}
+
+model Payment {
+  id                  String        @id @default(uuid())
+  shopId              String        @map("shop_id")
+  repairTicketId      String        @map("repair_ticket_id")
+  amount              Decimal       @db.Decimal(14, 2)
+  currency            String        @default("ETB")
+  method              PaymentMethod @default(cash)
+  reference           String?
+  status              PaymentStatus @default(recorded)
+  idempotencyKey      String?       @map("idempotency_key")
+  notes               String?
+  recordedBy          String?       @map("recorded_by")
+  recordedAt          DateTime      @default(now()) @map("recorded_at")
+  reversalOfPaymentId String?       @map("reversal_of_payment_id")
+
+  ticket   RepairTicket @relation(fields: [repairTicketId], references: [id], onDelete: Cascade)
+  recorder User?        @relation(fields: [recordedBy], references: [id])
+
+  @@index([shopId, repairTicketId, recordedAt])
+  @@map("payments")
+}
+
+model Part {
+  id              String   @id @default(uuid())
+  shopId          String   @map("shop_id")
+  sku             String
+  name            String
+  description     String?
+  unit            String   @default("pcs")
+  costPrice       Decimal  @default(0) @map("cost_price") @db.Decimal(14, 2)
+  sellingPrice    Decimal  @default(0) @map("selling_price") @db.Decimal(14, 2)
+  reorderLevel    Int      @default(5) @map("reorder_level")
+  currentQuantity Int      @default(0) @map("current_quantity")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  shop           Shop              @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  stockMovements StockMovement[]
+  repairUsages   RepairPartUsage[]
+
+  @@unique([shopId, sku])
+  @@index([shopId, name])
+  @@map("parts")
+}
+
+model StockMovement {
+  id            String            @id @default(uuid())
+  shopId        String            @map("shop_id")
+  partId        String            @map("part_id")
+  movementType  StockMovementType @map("movement_type")
+  quantityDelta Int               @map("quantity_delta")
+  unitCost      Decimal?          @map("unit_cost") @db.Decimal(14, 2)
+  referenceType String?           @map("reference_type")
+  referenceId   String?           @map("reference_id")
+  createdBy     String?           @map("created_by")
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  part Part @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, partId, createdAt])
+  @@map("stock_movements")
+}
+
+model RepairPartUsage {
+  id             String   @id @default(uuid())
+  shopId         String   @map("shop_id")
+  repairTicketId String   @map("repair_ticket_id")
+  partId         String   @map("part_id")
+  quantity       Int      @default(1)
+  unitCost       Decimal? @map("unit_cost") @db.Decimal(14, 2)
+  createdBy      String?  @map("created_by")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  ticket RepairTicket @relation(fields: [repairTicketId], references: [id], onDelete: Cascade)
+  part   Part         @relation(fields: [partId], references: [id], onDelete: Restrict)
+
+  @@index([shopId, repairTicketId])
+  @@map("repair_part_usages")
+}
+
+model Warranty {
+  id             String         @id @default(uuid())
+  shopId         String         @map("shop_id")
+  repairTicketId String         @unique @map("repair_ticket_id")
+  startsAt       DateTime       @default(now()) @map("starts_at")
+  endsAt         DateTime       @map("ends_at")
+  terms          String?
+  status         WarrantyStatus @default(active)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  ticket RepairTicket    @relation(fields: [repairTicketId], references: [id], onDelete: Cascade)
+  claims WarrantyClaim[]
+
+  @@map("warranties")
+}
+
+model WarrantyClaim {
+  id                  String   @id @default(uuid())
+  shopId              String   @map("shop_id")
+  warrantyId          String   @map("warranty_id")
+  customerDescription String   @map("customer_description")
+  status              String   @default("open")
+  resolution          String?
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  warranty Warranty @relation(fields: [warrantyId], references: [id], onDelete: Cascade)
+
+  @@map("warranty_claims")
+}
+
+model Notification {
+  id                String              @id @default(uuid())
+  shopId            String              @map("shop_id")
+  repairTicketId    String?             @map("repair_ticket_id")
+  customerId        String?             @map("customer_id")
+  channel           NotificationChannel @default(sms)
+  templateKey       String              @map("template_key")
+  destinationMasked String              @map("destination_masked")
+  providerMessageId String?             @map("provider_message_id")
+  status            NotificationStatus  @default(queued)
+  idempotencyKey    String              @unique @map("idempotency_key")
+  costAmount        Decimal?            @map("cost_amount") @db.Decimal(14, 4)
+  failureCodeSafe   String?             @map("failure_code_safe")
+  payload           Json?
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, status])
+  @@map("notifications")
+}
+
+model AuditEvent {
+  id          String   @id @default(uuid())
+  shopId      String   @map("shop_id")
+  actorUserId String?  @map("actor_user_id")
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  requestId   String?  @map("request_id")
+  metadata    Json?    @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  shop  Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  actor User? @relation(fields: [actorUserId], references: [id])
+
+  @@index([shopId, createdAt(sort: Desc)])
+  @@index([shopId, entityType, entityId])
+  @@map("audit_events")
+}

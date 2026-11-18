@@ -55,3 +55,44 @@ This repository is the project’s working source of truth. Read the documents i
 ## Suggested reading order
 
 Start with `docs/01-product-requirements.md`, then `docs/03-app-flow.md`, `DESIGN.md`, `docs/02-technical-requirements.md`, `docs/05-backend-schema.md`, and `security.md`. Use `AGENTS.md` and `guardrails.md` as mandatory instructions whenever coding agents work in this repository.
+
+
+## Running FixFlow
+
+### Prerequisites
+- Node.js LTS (v20+ or v22+)
+- npm
+
+### 1. Installation
+```bash
+npm install
+```
+
+### 2. Build Contracts
+```bash
+npm run build:contracts
+```
+
+### 3. Start Backend API
+```bash
+npm run dev:api
+# Server runs on http://localhost:4000/api/v1
+```
+
+### 4. Start Frontend Web Application
+```bash
+npm run dev:web
+# Web application runs on http://localhost:3000
+```
+
+### 5. Running Automated Security & API Tests
+```bash
+npm run test --workspace=@fixflow/api
+```
+
+## Security & Architecture Highlights
+- **PostgreSQL Row-Level Security (RLS):** All tenant tables enforce `FORCE ROW LEVEL SECURITY` with transaction-scoped `app.current_shop_id`.
+- **Zero Client Secret Leakage:** All API keys, JWT secrets, and database credentials remain strictly within `@fixflow/api`.
+- **Append-Only Financial Ledger:** Payments cannot be overwritten; adjustments are recorded as auditable reversals.
+- **Two-Factor Public Tracking:** Customers track progress at `/track` using Ticket Number + Phone Last 4 digits, revealing zero PII and stripping internal notes.
+- **Design Tokens:** The user interface adheres strictly to `DESIGN.md` ("Precision Workshop") with zero spinning loaders and layout-matching skeleton states.
