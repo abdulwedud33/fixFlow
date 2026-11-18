@@ -28,7 +28,13 @@ export default function LoginPage() {
     setIsLoading(false);
 
     if (res.error) {
-      setError(res.error.message);
+      if (res.error.code === "INVALID_CREDENTIALS") {
+        setError(
+          "Invalid phone/email or password. If you have not created your shop yet, click 'Register Repair Business' below, or use the demo credentials."
+        );
+      } else {
+        setError(res.error.message);
+      }
       return;
     }
 

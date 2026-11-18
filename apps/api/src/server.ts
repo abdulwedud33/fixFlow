@@ -14,8 +14,12 @@ import { inventoryRouter } from "./modules/inventory/inventory.controller";
 import { warrantiesRouter } from "./modules/warranties/warranties.controller";
 import { trackingRouter } from "./modules/tracking/tracking.controller";
 import { dashboardRouter } from "./modules/dashboard/dashboard.controller";
+import { seedDatabaseIfEmpty } from "./db/seed";
 
 export const app = express();
+
+// Seed initial demo data if database is empty
+seedDatabaseIfEmpty().catch((err) => console.error("Error seeding initial database:", err));
 
 // Security HTTP headers
 app.use(helmet());
