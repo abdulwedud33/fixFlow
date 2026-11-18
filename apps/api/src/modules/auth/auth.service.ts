@@ -112,7 +112,7 @@ export async function registerUserAndShop(input: RegisterInput, requestId?: stri
   const token = jwt.sign(
     { userId: user.id, shopId: shop.id },
     config.jwtSecret,
-    { expiresIn: config.jwtExpiresIn }
+    { expiresIn: "7d" }
   );
 
   return {
@@ -176,7 +176,7 @@ export async function loginUser(input: LoginInput, requestId?: string) {
   const token = jwt.sign(
     { userId: user.id, shopId: primaryShop.id },
     config.jwtSecret,
-    { expiresIn: config.jwtExpiresIn }
+    { expiresIn: "7d" }
   );
 
   logAuditEvent({
