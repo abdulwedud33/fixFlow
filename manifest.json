@@ -1,0 +1,29 @@
+{
+  "project": "FixFlow",
+  "version": "1.0",
+  "generated": "2026-11-18",
+  "files": [
+    ".env.example",
+    "AGENTS.md",
+    "DESIGN.md",
+    "README.md",
+    "docs/01-product-requirements.md",
+    "docs/02-technical-requirements.md",
+    "docs/03-app-flow.md",
+    "docs/04-ui-ux-design-brief.md",
+    "docs/05-backend-schema.md",
+    "docs/06-implementation-plan.md",
+    "docs/07-design-references.md",
+    "evals.md",
+    "guardrails.md",
+    "memory.md",
+    "prompts.md",
+    "security.md",
+    "tools.md"
+  ],
+  "notes": [
+    "Product discovery assumptions are explicitly marked as unvalidated.",
+    "RLS, authorization, rate limiting and secret-handling requirements are included.",
+    "Design reference skills are documented; unavailable skills are not claimed as executed."
+  ]
+}
