@@ -24,8 +24,8 @@ export default function DashboardLayout({
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-8 h-8 rounded-btn bg-brand-700 text-white font-bold flex items-center justify-center text-sm">
+      <div className="min-h-screen flex items-center justify-center bg-canvas">
+        <div className="w-10 h-10 rounded-lg bg-surface-card border border-accent/40 text-accent font-mono font-bold flex items-center justify-center text-sm shadow-glow-accent animate-pulse">
           FF
         </div>
       </div>

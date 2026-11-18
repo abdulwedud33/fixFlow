@@ -37,6 +37,8 @@ export function Input({
         <input
           id={inputId}
           required={required}
+          aria-invalid={error ? "true" : undefined}
+          aria-describedby={error ? `${inputId}_error` : helperText ? `${inputId}_helper` : undefined}
           {...props}
           className={`w-full h-10 bg-surface-card border rounded-btn text-sm text-content-primary placeholder:text-content-muted focus:outline-none transition-all duration-150 ${leftIcon ? "pl-9" : "px-3"
             } ${rightIcon ? "pr-9" : "px-3"} ${error
@@ -50,8 +52,8 @@ export function Input({
           </div>
         )}
       </div>
-      {error && <p className="text-xs text-error mt-1">{error}</p>}
-      {!error && helperText && <p className="text-xs text-content-muted mt-1">{helperText}</p>}
+      {error && <p id={`${inputId}_error`} className="text-xs text-error mt-1">{error}</p>}
+      {!error && helperText && <p id={`${inputId}_helper`} className="text-xs text-content-muted mt-1">{helperText}</p>}
     </div>
   );
 }

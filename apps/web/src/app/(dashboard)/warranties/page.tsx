@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ShieldCheck, ShieldAlert, Clock, ArrowUpRight, Search } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
@@ -9,6 +10,7 @@ import { TableSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function WarrantiesPage() {
+  const router = useRouter();
   const [repairs, setRepairs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,7 +57,7 @@ export default function WarrantiesPage() {
           title="No warranty certificates issued"
           description="Service warranties can be issued for any completed repair from the repair details workbench."
           actionLabel="View Repairs"
-          onAction={() => (window.location.href = "/repairs")}
+          onAction={() => router.push("/repairs")}
         />
       ) : (
         <div className="bg-surface-card border border-border rounded-card overflow-hidden shadow-card-dark">

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Search, Smartphone, Laptop, Tv, Tablet, Wrench, Shield, ArrowUpRight } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
@@ -10,6 +11,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { DeviceType } from "@fixflow/contracts";
 
 export default function DevicesPage() {
+  const router = useRouter();
   const [repairs, setRepairs] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -91,7 +93,7 @@ export default function DevicesPage() {
               : "No devices logged yet. Devices are automatically added to the registry during intake."
           }
           actionLabel="Intake Device"
-          onAction={() => (window.location.href = "/repairs/new")}
+          onAction={() => router.push("/repairs/new")}
         />
       ) : (
         <div className="bg-surface-card border border-border rounded-card overflow-hidden shadow-card-dark">

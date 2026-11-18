@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Search,
   Plus,
@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/Button";
 import { RepairStatus } from "@fixflow/contracts";
 
 export default function RepairsListPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialStatus = searchParams.get("status") || "";
 
@@ -150,7 +151,7 @@ export default function RepairsListPage() {
               setSearchQuery("");
               setStatusFilter("");
             } else {
-              window.location.href = "/repairs/new";
+              router.push("/repairs/new");
             }
           }}
         />
@@ -173,7 +174,7 @@ export default function RepairsListPage() {
                 {repairs.map((r) => (
                   <tr
                     key={r.id}
-                    onClick={() => (window.location.href = `/repairs/${r.id}`)}
+                    onClick={() => router.push(`/repairs/${r.id}`)}
                     className="hover:bg-surface-hover/70 cursor-pointer transition-colors group"
                   >
                     <td className="py-3.5 px-4 whitespace-nowrap">
