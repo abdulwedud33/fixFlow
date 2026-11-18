@@ -7,6 +7,8 @@
     "apps/*"
   ],
   "scripts": {
+    "build": "npm run build --workspace=@fixflow/contracts && npm run build --workspace=@fixflow/api",
+    "start": "npm run start --workspace=@fixflow/api",
     "build:contracts": "npm run build --workspace=@fixflow/contracts",
     "dev:api": "npm run dev --workspace=@fixflow/api",
     "dev:web": "npm run dev --workspace=@fixflow/web",
