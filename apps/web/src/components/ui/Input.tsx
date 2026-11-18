@@ -38,13 +38,11 @@ export function Input({
           id={inputId}
           required={required}
           {...props}
-          className={`w-full h-10 bg-surface-card border rounded-btn text-sm text-content-primary placeholder:text-content-muted focus:outline-none transition-all duration-150 ${
-            leftIcon ? "pl-9" : "px-3"
-          } ${rightIcon ? "pr-9" : "px-3"} ${
-            error
+          className={`w-full h-10 bg-surface-card border rounded-btn text-sm text-content-primary placeholder:text-content-muted focus:outline-none transition-all duration-150 ${leftIcon ? "pl-9" : "px-3"
+            } ${rightIcon ? "pr-9" : "px-3"} ${error
               ? "border-error focus:border-error focus:ring-1 focus:ring-error/50"
               : "border-border hover:border-border-strong focus:border-accent focus:ring-1 focus:ring-accent/40"
-          } ${className}`}
+            } ${className}`}
         />
         {rightIcon && (
           <div className="absolute right-3 text-content-muted pointer-events-none flex items-center">
@@ -88,11 +86,10 @@ export function Textarea({
         required={required}
         rows={rows}
         {...props}
-        className={`w-full px-3 py-2 bg-surface-card border rounded-btn text-sm text-content-primary placeholder:text-content-muted focus:outline-none transition-all duration-150 ${
-          error
-            ? "border-error focus:border-error focus:ring-1 focus:ring-error/50"
-            : "border-border hover:border-border-strong focus:border-accent focus:ring-1 focus:ring-accent/40"
-        } ${className}`}
+        className={`w-full px-3 py-2 bg-surface-card border rounded-btn text-sm text-content-primary placeholder:text-content-muted focus:outline-none transition-all duration-150 ${error
+          ? "border-error focus:border-error focus:ring-1 focus:ring-error/50"
+          : "border-border hover:border-border-strong focus:border-accent focus:ring-1 focus:ring-accent/40"
+          } ${className}`}
       />
       {error && <p className="text-xs text-error mt-1">{error}</p>}
       {!error && helperText && <p className="text-xs text-content-muted mt-1">{helperText}</p>}
@@ -129,11 +126,10 @@ export function Select({
         id={selectId}
         required={required}
         {...props}
-        className={`w-full h-10 px-3 bg-surface-card border rounded-btn text-sm text-content-primary focus:outline-none transition-all duration-150 ${
-          error
-            ? "border-error focus:border-error focus:ring-1 focus:ring-error/50"
-            : "border-border hover:border-border-strong focus:border-accent focus:ring-1 focus:ring-accent/40"
-        } ${className}`}
+        className={`w-full h-10 px-3 bg-surface-card border rounded-btn text-sm text-content-primary focus:outline-none transition-all duration-150 ${error
+          ? "border-error focus:border-error focus:ring-1 focus:ring-error/50"
+          : "border-border hover:border-border-strong focus:border-accent focus:ring-1 focus:ring-accent/40"
+          } ${className}`}
       >
         {children}
       </select>

@@ -222,11 +222,10 @@ export default function NewRepairPage() {
                     key={item.type}
                     type="button"
                     onClick={() => setFormData({ ...formData, deviceType: item.type })}
-                    className={`flex flex-col items-center justify-center p-3 rounded-btn border text-xs font-medium transition-all ${
-                      isSelected
-                        ? "bg-surface-card border-accent text-accent shadow-glow-accent"
-                        : "bg-surface border-border text-content-secondary hover:border-border-strong hover:text-content-primary"
-                    }`}
+                    className={`flex flex-col items-center justify-center p-3 rounded-btn border text-xs font-medium transition-all ${isSelected
+                      ? "bg-surface-card border-accent text-accent shadow-glow-accent"
+                      : "bg-surface border-border text-content-secondary hover:border-border-strong hover:text-content-primary"
+                      }`}
                   >
                     <Icon className="w-4 h-4 mb-1.5" />
                     <span>{item.label}</span>
@@ -314,11 +313,10 @@ export default function NewRepairPage() {
                     key={acc}
                     type="button"
                     onClick={() => toggleAccessory(acc)}
-                    className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-btn text-xs font-medium border transition-all ${
-                      isChecked
-                        ? "bg-accent-muted text-accent border-accent/40 font-semibold"
-                        : "bg-surface border-border text-content-muted hover:border-border-strong hover:text-content-primary"
-                    }`}
+                    className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-btn text-xs font-medium border transition-all ${isChecked
+                      ? "bg-accent-muted text-accent border-accent/40 font-semibold"
+                      : "bg-surface border-border text-content-muted hover:border-border-strong hover:text-content-primary"
+                      }`}
                   >
                     {isChecked && <Check className="w-3.5 h-3.5 stroke-[2.5]" />}
                     <span>{acc}</span>

@@ -100,7 +100,7 @@ export default function Home() {
 
         {/* Hero Subtitle */}
         <p className="text-sm sm:text-lg text-content-secondary max-w-2xl leading-relaxed mb-10">
-          Eliminate lost tickets, misplaced parts, and untracked Telebirr payments. 
+          Eliminate lost tickets, misplaced parts, and untracked Telebirr payments.
           FixFlow provides full-lifecycle hardware intake, technician assignment, and customer tracking.
         </p>
 

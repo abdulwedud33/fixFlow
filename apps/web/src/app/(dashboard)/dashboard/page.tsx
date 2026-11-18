@@ -286,13 +286,12 @@ export default function DashboardPage() {
                       {/* Workload Progress Bar */}
                       <div className="w-full h-1.5 bg-surface-card rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all duration-300 ${
-                            percent > 80
-                              ? "bg-error"
-                              : percent > 50
+                          className={`h-full rounded-full transition-all duration-300 ${percent > 80
+                            ? "bg-error"
+                            : percent > 50
                               ? "bg-warning"
                               : "bg-accent"
-                          }`}
+                            }`}
                           style={{ width: `${percent}%` }}
                         />
                       </div>

@@ -189,11 +189,10 @@ export default function InventoryPage() {
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-bold border ${
-                            isLow
-                              ? "bg-warning-muted text-warning border-warning/40"
-                              : "bg-success-muted text-success border-success/40"
-                          }`}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-bold border ${isLow
+                            ? "bg-warning-muted text-warning border-warning/40"
+                            : "bg-success-muted text-success border-success/40"
+                            }`}
                         >
                           {p.currentQuantity} {p.unit}
                         </span>

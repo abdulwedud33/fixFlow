@@ -34,13 +34,16 @@ body {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: #090B10;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #242B38;
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #323B4E;
 }
@@ -48,7 +51,7 @@ body {
 /* Industrial Grid & Mesh Background */
 .bg-grid-pattern {
   background-size: 32px 32px;
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(36, 43, 56, 0.25) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(36, 43, 56, 0.25) 1px, transparent 1px);
 }
@@ -73,9 +76,11 @@ body {
     background-color: #ffffff !important;
     color: #000000 !important;
   }
+
   .no-print {
     display: none !important;
   }
+
   .print-only {
     display: block !important;
   }
