@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Search, Wrench, CheckCircle2, Clock, MapPin, Phone, AlertCircle } from "lucide-react";
+import { Search, Wrench, CheckCircle2, Clock, MapPin, Phone, AlertCircle, Shield, Smartphone, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { apiRequest } from "@/lib/api";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, formatEthiopianPhone } from "@/lib/format";
 import { StatusBadge } from "@/components/ui/Badge";
 import { PublicRepairStatus } from "@fixflow/contracts";
 
@@ -43,32 +43,64 @@ export default function PublicTrackingPage() {
     }
   };
 
+  const stages = [
+    { key: "RECEIVED", label: "Received" },
+    { key: "DIAGNOSING", label: "Diagnosis" },
+    { key: "IN_PROGRESS", label: "Repairing" },
+    { key: "READY_FOR_PICKUP", label: "Ready" },
+  ];
+
+  const getStageIndex = (status: string) => {
+    switch (status) {
+      case "RECEIVED": return 0;
+      case "DIAGNOSING": return 1;
+      case "WAITING_FOR_APPROVAL":
+      case "WAITING_FOR_PARTS":
+      case "IN_PROGRESS": return 2;
+      case "READY_FOR_PICKUP":
+      case "COLLECTED": return 3;
+      default: return 0;
+    }
+  };
+
+  const currentStageIndex = result ? getStageIndex(result.status) : 0;
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between p-4 sm:p-6 lg:p-8">
-      {/* Top Bar */}
+    <div className="min-h-screen bg-canvas text-content-primary flex flex-col justify-between p-4 sm:p-6 lg:p-8">
+      {/* Top Header */}
       <header className="max-w-xl w-full mx-auto flex items-center justify-between pb-6">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-btn bg-brand-700 text-white font-bold flex items-center justify-center text-sm">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-lg bg-surface-card border border-accent/40 flex items-center justify-center font-mono font-bold text-accent text-sm shadow-glow-accent">
             FF
           </div>
-          <span className="font-bold text-ink-950 text-base">FixFlow Tracking</span>
+          <span className="font-bold text-content-primary text-base tracking-tight">FixFlow Portal</span>
         </div>
-        <Link href="/login" className="text-xs text-brand-700 font-semibold hover:underline">
-          Shop Staff Sign In
+        <Link
+          href="/login"
+          className="text-xs font-mono text-accent hover:underline flex items-center space-x-1"
+        >
+          <span>Staff Login</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </header>
 
-      {/* Main Card */}
-      <main className="max-w-xl w-full mx-auto bg-white border border-slate-200 rounded-card p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold text-ink-950 tracking-tight">Track Your Repair</h1>
-          <p className="text-xs text-slate-500">
-            Check live repair progress, diagnostic updates, and collection readiness
+      {/* Main Glass Card */}
+      <main className="max-w-xl w-full mx-auto bg-surface-card border border-border shadow-modal-dark rounded-xl p-6 sm:p-8 space-y-6">
+        <div className="text-center space-y-1.5">
+          <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-surface border border-accent/25 text-accent text-[11px] font-mono mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+            <span>Secure Customer Lookup</span>
+          </div>
+          <h1 className="text-2xl font-bold text-content-primary tracking-tight">
+            Live Repair Tracker
+          </h1>
+          <p className="text-xs text-content-secondary">
+            Enter your work order tracking code and phone digits to view live status
           </p>
         </div>
 
         {error && (
-          <div className="p-3 bg-danger-50 border border-red-200 text-danger-700 rounded-btn text-xs font-medium flex items-center space-x-2">
+          <div className="p-3.5 bg-error-muted border border-error/40 text-error rounded-card text-xs flex items-center space-x-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -77,20 +109,20 @@ export default function PublicTrackingPage() {
         {/* Tracking Form */}
         <form onSubmit={handleTrack} className="space-y-4">
           <Input
-            label="Repair Tracking Number"
+            label="Ticket Number"
             required
             placeholder="e.g. FF-2611-0001"
             value={ticketNumber}
-            onChange={(e) => setTicketNumber(e.target.value)}
+            onChange={(e) => setTicketNumber(e.target.value.toUpperCase())}
           />
 
           <Input
-            label="Last 4 Digits of Mobile Phone"
+            label="Last 4 Digits of Your Phone"
             required
             type="text"
             maxLength={4}
             placeholder="e.g. 3344"
-            helperText="The phone number you provided during intake"
+            helperText="The mobile number provided during device drop-off"
             value={phoneLast4}
             onChange={(e) => setPhoneLast4(e.target.value)}
           />
@@ -99,76 +131,111 @@ export default function PublicTrackingPage() {
             type="submit"
             variant="primary"
             isLoading={isLoading}
-            loadingText="Looking up status..."
+            loadingText="Verifying with shop database..."
             className="w-full"
           >
             <Search className="w-4 h-4 mr-2" />
-            <span>Check Status</span>
+            <span>Track Repair Progress</span>
           </Button>
         </form>
 
         {/* Tracking Result View */}
         {result && (
-          <div className="pt-6 border-t border-slate-200 space-y-5">
+          <div className="pt-6 border-t border-border space-y-6 animate-in fade-in duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[11px] text-slate-400 font-semibold uppercase block">
-                  Tracking Number
+                <span className="text-[10px] font-mono text-content-muted uppercase tracking-wider block">
+                  Tracking Code
                 </span>
-                <span className="text-lg font-mono font-bold text-brand-700">
+                <span className="text-lg font-mono font-bold text-accent">
                   {result.ticketNumber}
                 </span>
               </div>
               <StatusBadge status={result.status} />
             </div>
 
-            {/* Status Announcement Banner */}
+            {/* Visual Progress Stepper */}
+            <div className="p-4 bg-surface rounded-card border border-border/80 space-y-3">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-content-muted block">
+                Repair Milestone Progress
+              </span>
+              <div className="grid grid-cols-4 gap-2">
+                {stages.map((stage, idx) => {
+                  const isPassed = idx <= currentStageIndex;
+                  const isCurrent = idx === currentStageIndex;
+
+                  return (
+                    <div key={stage.key} className="space-y-1.5 text-center">
+                      <div
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          isPassed ? "bg-accent shadow-glow-accent" : "bg-surface-card"
+                        }`}
+                      />
+                      <span
+                        className={`text-[10px] font-mono block ${
+                          isCurrent
+                            ? "text-accent font-bold"
+                            : isPassed
+                            ? "text-content-primary"
+                            : "text-content-muted"
+                        }`}
+                      >
+                        {stage.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Ready for Pickup Alert */}
             {result.status === "READY_FOR_PICKUP" && (
-              <div className="p-4 bg-teal-50 border border-teal-300 rounded-btn text-xs text-teal-800 space-y-1">
-                <p className="font-bold flex items-center space-x-1.5 text-teal-900">
-                  <CheckCircle2 className="w-4 h-4 text-teal-700" />
+              <div className="p-4 bg-success-muted border border-success/40 rounded-card text-xs text-success space-y-1">
+                <p className="font-bold flex items-center space-x-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-success" />
                   <span>Your Device is Ready for Collection!</span>
                 </p>
-                <p>
-                  Please visit the repair shop with your tracking receipt or phone to collect your
-                  device.
+                <p className="text-[11px] text-content-secondary">
+                  Please visit the repair shop with your phone or ticket number to collect your hardware.
                 </p>
               </div>
             )}
 
-            {/* Device & Dates */}
-            <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-btn border border-slate-200">
+            {/* Hardware & Dates */}
+            <div className="grid grid-cols-2 gap-4 text-xs bg-surface p-4 rounded-card border border-border">
               <div>
-                <span className="text-slate-400 block mb-0.5">Device</span>
-                <span className="font-semibold text-slate-900 block">{result.deviceSummary}</span>
+                <span className="text-content-muted block text-[11px] mb-0.5">Device Hardware</span>
+                <span className="font-semibold text-content-primary block font-mono">
+                  {result.deviceSummary}
+                </span>
               </div>
               <div>
-                <span className="text-slate-400 block mb-0.5">Date Received</span>
-                <span className="font-medium text-slate-800 block">
+                <span className="text-content-muted block text-[11px] mb-0.5">Intake Date</span>
+                <span className="font-mono text-content-secondary block">
                   {formatDateTime(result.receivedAt)}
                 </span>
               </div>
               {result.expectedCompletionAt && (
-                <div className="col-span-2 pt-2 border-t border-slate-200">
-                  <span className="text-slate-400 block mb-0.5">Estimated Completion</span>
-                  <span className="font-medium text-slate-800 block">
+                <div className="col-span-2 pt-2 border-t border-border">
+                  <span className="text-content-muted block text-[11px] mb-0.5">Estimated Completion</span>
+                  <span className="font-mono font-medium text-accent block">
                     {formatDateTime(result.expectedCompletionAt)}
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Public Progress Updates */}
+            {/* Public Technician Notes */}
             {result.publicNotes && result.publicNotes.length > 0 && (
               <div className="space-y-2">
-                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  Progress Updates
+                <span className="text-xs font-mono uppercase tracking-wider text-content-muted block">
+                  Technician Updates
                 </span>
-                <div className="divide-y divide-slate-100 bg-white border border-slate-200 rounded-btn p-3">
+                <div className="divide-y divide-border/60 bg-surface border border-border rounded-card p-3">
                   {result.publicNotes.map((n, i) => (
-                    <div key={i} className="py-2 first:pt-0 last:pb-0 text-xs">
-                      <p className="text-slate-800">{n.body}</p>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">
+                    <div key={i} className="py-2.5 first:pt-0 last:pb-0 text-xs">
+                      <p className="text-content-primary leading-relaxed">{n.body}</p>
+                      <span className="text-[10px] font-mono text-content-muted block mt-1">
                         {formatDateTime(n.createdAt)}
                       </span>
                     </div>
@@ -177,16 +244,16 @@ export default function PublicTrackingPage() {
               </div>
             )}
 
-            {/* Repair Shop Contact Info */}
-            <div className="pt-4 border-t border-slate-200 text-xs text-slate-600 space-y-1">
-              <span className="font-bold text-slate-900 block">{result.shopName}</span>
-              <p className="flex items-center space-x-1">
-                <Phone className="w-3.5 h-3.5 text-slate-400" />
-                <span>{result.shopPhone}</span>
+            {/* Shop Contact Card */}
+            <div className="pt-4 border-t border-border text-xs text-content-secondary space-y-1.5">
+              <span className="font-bold text-content-primary block">{result.shopName}</span>
+              <p className="flex items-center space-x-2">
+                <Phone className="w-3.5 h-3.5 text-accent" />
+                <span className="font-mono text-content-primary">{result.shopPhone}</span>
               </p>
               {result.shopAddress && (
-                <p className="flex items-center space-x-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                <p className="flex items-center space-x-2 text-content-muted">
+                  <MapPin className="w-3.5 h-3.5" />
                   <span>{result.shopAddress}</span>
                 </p>
               )}
@@ -196,8 +263,8 @@ export default function PublicTrackingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="text-center text-xs text-slate-400 pt-6">
-        Protected by FixFlow Security • Ethiopia
+      <footer className="text-center text-xs font-mono text-content-muted pt-6">
+        FixFlow Precision Operations • Multi-Tenant Protected
       </footer>
     </div>
   );

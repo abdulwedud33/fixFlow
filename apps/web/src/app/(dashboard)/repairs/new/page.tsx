@@ -3,8 +3,22 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, Smartphone, Laptop, Tv, Tablet } from "lucide-react";
-import { Input, Textarea } from "@/components/ui/Input";
+import {
+  ArrowLeft,
+  Check,
+  Smartphone,
+  Laptop,
+  Tv,
+  Tablet,
+  User,
+  Phone,
+  Tag,
+  Calendar,
+  DollarSign,
+  AlertCircle,
+  Cpu,
+} from "lucide-react";
+import { Input, Textarea, Select } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { apiRequest } from "@/lib/api";
 import { DeviceType, RepairPriority } from "@fixflow/contracts";
@@ -110,33 +124,47 @@ export default function NewRepairPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-3 pb-4 border-b border-border">
         <Link
           href="/repairs"
-          className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 rounded-full transition-colors"
+          className="p-2 text-content-muted hover:text-content-primary hover:bg-surface-card rounded-btn transition-colors border border-border"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-ink-950 tracking-tight">New Repair Intake</h1>
-          <p className="text-xs text-slate-500">
-            Log customer details, device hardware info, and intake checklist
+          <div className="flex items-center space-x-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-content-primary tracking-tight">
+              New Device Intake
+            </h1>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface-card border border-border text-accent uppercase">
+              Guided Wizard
+            </span>
+          </div>
+          <p className="text-xs text-content-secondary mt-0.5">
+            Log customer details, inspect physical hardware, and generate tracking receipt
           </p>
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-danger-50 border border-red-200 text-danger-700 rounded-btn text-xs font-medium">
-          {error}
+        <div className="p-3.5 bg-error-muted border border-error/40 text-error rounded-card text-xs flex items-center space-x-2">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Section 1: Customer Details */}
-        <div className="bg-white border border-slate-200 rounded-card p-5 sm:p-6 space-y-4 shadow-sm">
-          <h2 className="text-sm font-bold text-ink-950 uppercase tracking-wider text-slate-700">
-            1. Customer Information
-          </h2>
+        <div className="bg-surface-card border border-border rounded-card p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-border/60 pb-3">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-mono text-accent font-semibold">01</span>
+              <h2 className="text-sm font-semibold text-content-primary tracking-wide">
+                Customer Information
+              </h2>
+            </div>
+            <span className="text-[11px] font-mono text-content-muted">Identity & Contact</span>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
@@ -145,6 +173,7 @@ export default function NewRepairPage() {
               placeholder="e.g. Almaz Bekele"
               value={formData.customerName}
               error={fieldErrors["customer.fullName"]}
+              leftIcon={<User className="w-4 h-4" />}
               onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
             />
 
@@ -155,24 +184,33 @@ export default function NewRepairPage() {
               placeholder="e.g. 0911223344"
               value={formData.customerPhone}
               error={fieldErrors["customer.phone"]}
-              helperText="For SMS status updates & receipt"
+              helperText="Ethiopian mobile (SMS tracking & receipts)"
+              leftIcon={<Phone className="w-4 h-4" />}
               onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
             />
           </div>
         </div>
 
         {/* Section 2: Device Details */}
-        <div className="bg-white border border-slate-200 rounded-card p-5 sm:p-6 space-y-4 shadow-sm">
-          <h2 className="text-sm font-bold text-ink-950 uppercase tracking-wider text-slate-700">
-            2. Device Details
-          </h2>
+        <div className="bg-surface-card border border-border rounded-card p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-border/60 pb-3">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-mono text-accent font-semibold">02</span>
+              <h2 className="text-sm font-semibold text-content-primary tracking-wide">
+                Hardware Specifications
+              </h2>
+            </div>
+            <span className="text-[11px] font-mono text-content-muted">Device Registry</span>
+          </div>
 
           {/* Device Type Selector */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2">Device Category</label>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            <label className="block text-xs font-medium text-content-secondary mb-2">
+              Device Category
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {[
-                { type: DeviceType.PHONE, label: "Phone", icon: Smartphone },
+                { type: DeviceType.PHONE, label: "Smartphone", icon: Smartphone },
                 { type: DeviceType.LAPTOP, label: "Laptop", icon: Laptop },
                 { type: DeviceType.TABLET, label: "Tablet", icon: Tablet },
                 { type: DeviceType.APPLIANCE, label: "Appliance", icon: Tv },
@@ -184,13 +222,13 @@ export default function NewRepairPage() {
                     key={item.type}
                     type="button"
                     onClick={() => setFormData({ ...formData, deviceType: item.type })}
-                    className={`flex flex-col items-center justify-center p-2.5 rounded-btn border text-xs font-medium transition-colors ${
+                    className={`flex flex-col items-center justify-center p-3 rounded-btn border text-xs font-medium transition-all ${
                       isSelected
-                        ? "bg-brand-50 border-brand-700 text-brand-700 font-semibold"
-                        : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                        ? "bg-surface-card border-accent text-accent shadow-glow-accent"
+                        : "bg-surface border-border text-content-secondary hover:border-border-strong hover:text-content-primary"
                     }`}
                   >
-                    <Icon className="w-4 h-4 mb-1" />
+                    <Icon className="w-4 h-4 mb-1.5" />
                     <span>{item.label}</span>
                   </button>
                 );
@@ -236,16 +274,22 @@ export default function NewRepairPage() {
         </div>
 
         {/* Section 3: Problem & Intake Checklist */}
-        <div className="bg-white border border-slate-200 rounded-card p-5 sm:p-6 space-y-4 shadow-sm">
-          <h2 className="text-sm font-bold text-ink-950 uppercase tracking-wider text-slate-700">
-            3. Intake Inspection & Issues
-          </h2>
+        <div className="bg-surface-card border border-border rounded-card p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-border/60 pb-3">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-mono text-accent font-semibold">03</span>
+              <h2 className="text-sm font-semibold text-content-primary tracking-wide">
+                Diagnostics & Physical Condition
+              </h2>
+            </div>
+            <span className="text-[11px] font-mono text-content-muted">Intake Verification</span>
+          </div>
 
           <Textarea
-            label="Reported Problem / Issue Description"
+            label="Reported Fault / Customer Issue Description"
             required
             rows={3}
-            placeholder="Describe what the customer reported (e.g. Screen cracked, device does not charge, power button stuck)"
+            placeholder="Describe the fault reported by customer (e.g. Broken OLED display, battery drains quickly, no sound from ear speaker)"
             value={formData.reportedIssue}
             error={fieldErrors.reportedIssue}
             onChange={(e) => setFormData({ ...formData, reportedIssue: e.target.value })}
@@ -253,14 +297,14 @@ export default function NewRepairPage() {
 
           <Input
             label="Physical Condition on Intake"
-            placeholder="e.g. Minor scratches on back, glass cracked at top right, water damage indicator pink"
+            placeholder="e.g. Scratched back panel, camera lens intact, no liquid ingress detected"
             value={formData.conditionOnIntake}
             onChange={(e) => setFormData({ ...formData, conditionOnIntake: e.target.value })}
           />
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2">
-              Accessories Left With Device
+            <label className="block text-xs font-medium text-content-secondary mb-2">
+              Accessories Left with Repair Shop
             </label>
             <div className="flex flex-wrap gap-2">
               {commonAccessories.map((acc) => {
@@ -270,13 +314,13 @@ export default function NewRepairPage() {
                     key={acc}
                     type="button"
                     onClick={() => toggleAccessory(acc)}
-                    className={`inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-btn text-xs font-medium border transition-all ${
                       isChecked
-                        ? "bg-brand-700 text-white border-brand-700"
-                        : "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200"
+                        ? "bg-accent-muted text-accent border-accent/40 font-semibold"
+                        : "bg-surface border-border text-content-muted hover:border-border-strong hover:text-content-primary"
                     }`}
                   >
-                    {isChecked && <Check className="w-3 h-3" />}
+                    {isChecked && <Check className="w-3.5 h-3.5 stroke-[2.5]" />}
                     <span>{acc}</span>
                   </button>
                 );
@@ -286,19 +330,26 @@ export default function NewRepairPage() {
         </div>
 
         {/* Section 4: Estimates & Assignment */}
-        <div className="bg-white border border-slate-200 rounded-card p-5 sm:p-6 space-y-4 shadow-sm">
-          <h2 className="text-sm font-bold text-ink-950 uppercase tracking-wider text-slate-700">
-            4. Estimates & Technician Assignment
-          </h2>
+        <div className="bg-surface-card border border-border rounded-card p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-border/60 pb-3">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-mono text-accent font-semibold">04</span>
+              <h2 className="text-sm font-semibold text-content-primary tracking-wide">
+                Initial Quotation & Bench Assignment
+              </h2>
+            </div>
+            <span className="text-[11px] font-mono text-content-muted">Workbench Setup</span>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Initial Cost Estimate (ETB)"
+              label="Estimated Cost (ETB)"
               type="number"
               min="0"
               step="50"
               placeholder="e.g. 1500"
               value={formData.estimatedCost}
+              leftIcon={<DollarSign className="w-4 h-4" />}
               onChange={(e) => setFormData({ ...formData, estimatedCost: e.target.value })}
             />
 
@@ -306,19 +357,20 @@ export default function NewRepairPage() {
               label="Expected Completion Date"
               type="date"
               value={formData.expectedCompletionDate}
+              leftIcon={<Calendar className="w-4 h-4" />}
               onChange={(e) => setFormData({ ...formData, expectedCompletionDate: e.target.value })}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Assign Technician
+              <label className="block text-xs font-medium text-content-secondary mb-1.5">
+                Assign Lead Technician
               </label>
               <select
                 value={formData.technicianId}
                 onChange={(e) => setFormData({ ...formData, technicianId: e.target.value })}
-                className="w-full h-11 px-3.5 bg-white border border-slate-300 rounded-btn text-sm text-slate-900 focus:outline-none focus:border-brand-700"
+                className="w-full h-10 px-3 bg-surface-card border border-border hover:border-border-strong focus:border-accent rounded-btn text-sm text-content-primary focus:outline-none transition-colors"
               >
                 <option value="">Unassigned (Assign later)</option>
                 {team.map((m) => (
@@ -330,43 +382,45 @@ export default function NewRepairPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Priority</label>
+              <label className="block text-xs font-medium text-content-secondary mb-1.5">
+                Priority Level
+              </label>
               <select
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full h-11 px-3.5 bg-white border border-slate-300 rounded-btn text-sm text-slate-900 focus:outline-none focus:border-brand-700"
+                className="w-full h-10 px-3 bg-surface-card border border-border hover:border-border-strong focus:border-accent rounded-btn text-sm text-content-primary focus:outline-none transition-colors"
               >
-                <option value={RepairPriority.NORMAL}>Normal Priority</option>
-                <option value={RepairPriority.URGENT}>Urgent (Expedited)</option>
+                <option value={RepairPriority.NORMAL}>Normal Turnaround</option>
+                <option value={RepairPriority.URGENT}>Urgent (Expedited Queue)</option>
               </select>
             </div>
           </div>
 
-          <div className="pt-2">
-            <label className="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+          <div className="pt-2 border-t border-border/40">
+            <label className="flex items-center space-x-2.5 text-xs text-content-secondary cursor-pointer">
               <input
                 type="checkbox"
                 checked={formData.sendCustomerSms}
                 onChange={(e) => setFormData({ ...formData, sendCustomerSms: e.target.checked })}
-                className="rounded border-slate-300 text-brand-700 focus:ring-brand-700"
+                className="rounded border-border text-accent focus:ring-accent bg-surface-card"
               />
-              <span>Send intake confirmation SMS with tracking link to customer</span>
+              <span>Send instant confirmation SMS with live tracking link to customer</span>
             </label>
           </div>
         </div>
 
-        {/* Stable Form Submission Bar */}
-        <div className="flex items-center justify-end space-x-3 pt-4">
+        {/* Stable Form Submission Controls */}
+        <div className="flex items-center justify-end space-x-3 pt-2">
           <Link href="/repairs">
             <Button variant="secondary" type="button">
-              Cancel
+              Discard
             </Button>
           </Link>
           <Button
             type="submit"
             variant="primary"
             isLoading={isLoading}
-            loadingText="Creating Ticket & Generating Receipt..."
+            loadingText="Generating Ticket & Audit Trail..."
           >
             Create Repair Ticket
           </Button>

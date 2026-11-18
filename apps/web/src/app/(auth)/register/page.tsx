@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { apiRequest, setAuthToken } from "@/lib/api";
+import { Store, User, Phone, Mail, Lock, AlertCircle, ArrowRight } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -62,34 +63,40 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-slate-50">
-      <div className="w-full max-w-lg bg-white border border-slate-200 rounded-card p-6 sm:p-8 shadow-sm">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-btn bg-brand-700 text-white font-bold flex items-center justify-center mx-auto text-xl mb-3">
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-canvas bg-grid-pattern relative">
+      <div className="w-full max-w-lg bg-surface-card border border-border shadow-modal-dark rounded-xl p-6 sm:p-8 space-y-6 relative z-10">
+        {/* Brand Header */}
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 rounded-xl bg-surface border border-accent/40 text-accent font-mono font-bold flex items-center justify-center mx-auto text-lg shadow-glow-accent">
             FF
           </div>
-          <h1 className="text-2xl font-bold text-ink-950 tracking-tight">Set up your Repair Shop</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Get started with FixFlow in under two minutes
-          </p>
+          <div>
+            <h1 className="text-2xl font-bold text-content-primary tracking-tight">
+              Register Repair Business
+            </h1>
+            <p className="text-xs text-content-secondary mt-1">
+              Set up your shop workspace on FixFlow in under two minutes
+            </p>
+          </div>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-danger-50 border border-red-200 text-danger-700 rounded-btn text-xs font-medium">
-            {error}
+          <div className="p-3.5 bg-error-muted border border-error/40 text-error rounded-card text-xs flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Your Full Name"
+              label="Owner / Lead Name"
               type="text"
               required
               placeholder="e.g. Abebe Kebede"
               value={formData.displayName}
               error={fieldErrors.displayName}
+              leftIcon={<User className="w-4 h-4" />}
               onChange={(e) => handleChange("displayName", e.target.value)}
             />
 
@@ -97,10 +104,11 @@ export default function RegisterPage() {
               label="Mobile Phone"
               type="tel"
               required
-              placeholder="e.g. 0912345678"
+              placeholder="e.g. 0911223344"
               value={formData.phone}
               error={fieldErrors.phone}
-              helperText="Ethiopian number (09... or +251...)"
+              helperText="Ethiopian carrier number"
+              leftIcon={<Phone className="w-4 h-4" />}
               onChange={(e) => handleChange("phone", e.target.value)}
             />
           </div>
@@ -112,34 +120,37 @@ export default function RegisterPage() {
               placeholder="owner@shop.et"
               value={formData.email}
               error={fieldErrors.email}
+              leftIcon={<Mail className="w-4 h-4" />}
               onChange={(e) => handleChange("email", e.target.value)}
             />
 
             <Input
-              label="Create Password"
+              label="Account Password"
               type="password"
               required
-              placeholder="At least 8 characters"
+              placeholder="Min. 8 characters"
               value={formData.password}
               error={fieldErrors.password}
+              leftIcon={<Lock className="w-4 h-4" />}
               onChange={(e) => handleChange("password", e.target.value)}
             />
           </div>
 
-          <div className="pt-2 border-t border-slate-100">
+          <div className="pt-2 border-t border-border">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Shop / Business Name"
                 type="text"
                 required
-                placeholder="e.g. Abebe Mobile & Electronics"
+                placeholder="e.g. Bole Precision Electronics"
                 value={formData.shopName}
                 error={fieldErrors.shopName}
+                leftIcon={<Store className="w-4 h-4" />}
                 onChange={(e) => handleChange("shopName", e.target.value)}
               />
 
               <Input
-                label="City / Location"
+                label="City / Sub-City"
                 type="text"
                 placeholder="Addis Ababa"
                 value={formData.shopCity}
@@ -149,23 +160,23 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className="pt-4">
+          <div className="pt-3">
             <Button
               type="submit"
               variant="primary"
               isLoading={isLoading}
-              loadingText="Creating shop..."
+              loadingText="Initializing tenant & database..."
               className="w-full"
             >
-              Create Shop & Continue
+              Launch Workshop Instance
             </Button>
           </div>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-slate-100 text-center">
-          <p className="text-xs text-slate-600">
-            Already registered?{" "}
-            <Link href="/login" className="text-brand-700 font-semibold hover:underline">
+        <div className="pt-4 border-t border-border text-center">
+          <p className="text-xs text-content-secondary">
+            Already have an active shop?{" "}
+            <Link href="/login" className="text-accent font-semibold hover:underline">
               Sign In
             </Link>
           </p>

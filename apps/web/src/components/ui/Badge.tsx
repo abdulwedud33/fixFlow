@@ -1,64 +1,88 @@
 import React from "react";
 import { RepairStatus, RepairPriority } from "@fixflow/contracts";
 
-interface BadgeProps {
-  status?: string;
-  priority?: string;
-  children?: React.ReactNode;
-  className?: string;
-}
-
 export function StatusBadge({ status, className = "" }: { status: string; className?: string }) {
-  let style = "bg-slate-100 text-slate-700 border-slate-300"; // default received
+  let bg = "bg-surface-card";
+  let text = "text-content-secondary";
+  let border = "border-border";
+  let dot = "bg-content-muted";
   let label = status;
 
   switch (status) {
     case RepairStatus.RECEIVED:
-      style = "bg-slate-100 text-slate-700 border-slate-300";
+      bg = "bg-surface-card";
+      text = "text-content-secondary";
+      border = "border-border";
+      dot = "bg-content-muted";
       label = "Received";
       break;
     case RepairStatus.DIAGNOSING:
-      style = "bg-blue-50 text-brand-700 border-blue-200";
+      bg = "bg-sky-muted";
+      text = "text-sky";
+      border = "border-sky-border";
+      dot = "bg-sky animate-pulse";
       label = "Diagnosing";
       break;
     case RepairStatus.WAITING_FOR_APPROVAL:
-      style = "bg-amber-50 text-amber-700 border-amber-200";
+      bg = "bg-warning-muted";
+      text = "text-warning";
+      border = "border-warning-border";
+      dot = "bg-warning";
       label = "Waiting Approval";
       break;
     case RepairStatus.WAITING_FOR_PARTS:
-      style = "bg-amber-50 text-amber-700 border-amber-200";
+      bg = "bg-warning-muted";
+      text = "text-warning";
+      border = "border-warning-border";
+      dot = "bg-warning";
       label = "Waiting for Parts";
       break;
     case RepairStatus.IN_PROGRESS:
-      style = "bg-blue-50 text-brand-700 border-blue-200";
+      bg = "bg-accent-muted";
+      text = "text-accent";
+      border = "border-accent-border";
+      dot = "bg-accent animate-pulse";
       label = "In Progress";
       break;
     case RepairStatus.COMPLETED:
-      style = "bg-teal-50 text-teal-700 border-teal-200";
+      bg = "bg-success-muted";
+      text = "text-success";
+      border = "border-success-border";
+      dot = "bg-success";
       label = "Completed";
       break;
     case RepairStatus.READY_FOR_PICKUP:
-      style = "bg-teal-50 text-teal-700 border-teal-300 font-semibold";
+      bg = "bg-success-muted";
+      text = "text-success font-semibold";
+      border = "border-success";
+      dot = "bg-success ring-2 ring-success/30";
       label = "Ready for Pickup";
       break;
     case RepairStatus.COLLECTED:
-      style = "bg-teal-50 text-teal-700 border-teal-200";
+      bg = "bg-surface-card";
+      text = "text-content-secondary";
+      border = "border-border";
+      dot = "bg-success";
       label = "Collected";
       break;
     case RepairStatus.CANCELLED:
-      style = "bg-danger-50 text-danger-700 border-red-200";
+      bg = "bg-error-muted";
+      text = "text-error";
+      border = "border-error-border";
+      dot = "bg-error";
       label = "Cancelled";
       break;
     default:
-      style = "bg-slate-100 text-slate-700 border-slate-200";
+      label = status.replace(/_/g, " ");
       break;
   }
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${style} ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono uppercase tracking-wider border ${bg} ${text} ${border} ${className}`}
     >
-      {label}
+      <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+      <span>{label}</span>
     </span>
   );
 }
@@ -66,10 +90,15 @@ export function StatusBadge({ status, className = "" }: { status: string; classN
 export function PriorityBadge({ priority }: { priority: string }) {
   if (priority === RepairPriority.URGENT) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-danger-50 text-danger-700 border border-red-200">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono uppercase font-semibold bg-error-muted text-error border border-error/30">
+        <span className="w-1.5 h-1.5 rounded-full bg-error animate-ping" />
         Urgent
       </span>
     );
   }
-  return null;
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono uppercase font-normal bg-surface-card text-content-secondary border border-border">
+      Normal
+    </span>
+  );
 }

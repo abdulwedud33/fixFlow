@@ -1,10 +1,13 @@
 import React from "react";
+import { Loader2 } from "lucide-react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "tertiary" | "destructive";
-  size?: "sm" | "md" | "lg";
+  variant?: "primary" | "secondary" | "outline" | "tertiary" | "destructive" | "accent-ghost";
+  size?: "xs" | "sm" | "md" | "lg";
   isLoading?: boolean;
   loadingText?: string;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
 export function Button({
@@ -14,35 +17,51 @@ export function Button({
   isLoading = false,
   loadingText,
   disabled,
+  leftIcon,
+  rightIcon,
   className = "",
   ...props
 }: ButtonProps) {
-  // Height and padding tokens
   const sizeStyles = {
-    sm: "h-9 px-3 text-xs",
-    md: "h-11 px-4 text-sm",
-    lg: "h-12 px-6 text-base",
+    xs: "h-7 px-2.5 text-xs gap-1.5 rounded-md",
+    sm: "h-8 px-3 text-xs gap-2 rounded-btn",
+    md: "h-10 px-4 text-sm gap-2 rounded-btn",
+    lg: "h-11 px-5 text-sm font-medium gap-2.5 rounded-btn",
   }[size];
 
-  // Visual variant tokens from DESIGN.md
   const variantStyles = {
     primary:
-      "bg-brand-700 text-white hover:bg-brand-600 active:bg-brand-700 shadow-sm focus-visible:ring-2 focus-visible:ring-brand-700/20 disabled:bg-slate-300 disabled:text-slate-500",
+      "bg-accent text-canvas font-semibold hover:bg-accent-hover active:bg-accent-active shadow-glow-accent border border-accent/30 focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-50 disabled:pointer-events-none",
     secondary:
-      "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 active:bg-slate-100 shadow-sm focus-visible:ring-2 focus-visible:ring-slate-300 disabled:bg-slate-50 disabled:text-slate-400",
+      "bg-surface-card text-content-primary hover:bg-surface-hover active:bg-surface-card border border-border hover:border-border-strong shadow-sm focus-visible:ring-2 focus-visible:ring-accent/20 disabled:opacity-40 disabled:pointer-events-none",
+    outline:
+      "bg-transparent text-content-primary border border-border hover:border-border-strong hover:bg-surface-hover/50 focus-visible:ring-2 focus-visible:ring-border disabled:opacity-40 disabled:pointer-events-none",
     tertiary:
-      "bg-transparent text-slate-700 hover:bg-slate-100 active:bg-slate-200 focus-visible:ring-2 focus-visible:ring-slate-300 disabled:text-slate-400",
+      "bg-transparent text-content-secondary hover:text-content-primary hover:bg-surface-hover/70 focus-visible:ring-2 focus-visible:ring-border disabled:opacity-40 disabled:pointer-events-none",
+    "accent-ghost":
+      "bg-accent-subtle text-accent hover:bg-accent-muted border border-accent/20 hover:border-accent/40 focus-visible:ring-2 focus-visible:ring-accent/30 disabled:opacity-40 disabled:pointer-events-none",
     destructive:
-      "bg-danger-700 text-white hover:bg-red-700 active:bg-danger-700 shadow-sm focus-visible:ring-2 focus-visible:ring-danger-700/20 disabled:bg-slate-300 disabled:text-slate-500",
+      "bg-error-muted text-error border border-error/30 hover:bg-error/20 active:bg-error/30 focus-visible:ring-2 focus-visible:ring-error/40 disabled:opacity-40 disabled:pointer-events-none",
   }[variant];
 
   return (
     <button
       {...props}
       disabled={disabled || isLoading}
-      className={`inline-flex items-center justify-center font-medium rounded-btn transition-colors focus:outline-none disabled:cursor-not-allowed select-none ${sizeStyles} ${variantStyles} ${className}`}
+      className={`inline-flex items-center justify-center font-medium transition-all duration-150 focus:outline-none select-none ${sizeStyles} ${variantStyles} ${className}`}
     >
-      {isLoading ? loadingText || "Saving..." : children}
+      {isLoading ? (
+        <>
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          <span>{loadingText || "Processing..."}</span>
+        </>
+      ) : (
+        <>
+          {leftIcon}
+          {children}
+          {rightIcon}
+        </>
+      )}
     </button>
   );
 }

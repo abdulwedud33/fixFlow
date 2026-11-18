@@ -1,9 +1,11 @@
 import React from "react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
+  label?: string;
   error?: string;
   helperText?: string;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
 export function Input({
@@ -13,33 +15,51 @@ export function Input({
   id,
   className = "",
   required,
+  leftIcon,
+  rightIcon,
   ...props
 }: InputProps) {
-  const inputId = id || `input_${label.toLowerCase().replace(/\s+/g, "_")}`;
+  const inputId = id || (label ? `input_${label.toLowerCase().replace(/\s+/g, "_")}` : undefined);
 
   return (
     <div className="w-full space-y-1.5">
-      <label htmlFor={inputId} className="block text-xs font-semibold text-slate-700">
-        {label} {required && <span className="text-danger-700">*</span>}
-      </label>
-      <input
-        id={inputId}
-        required={required}
-        {...props}
-        className={`w-full h-11 px-3.5 bg-white border rounded-btn text-sm text-slate-950 placeholder-slate-400 focus:outline-none transition-colors ${
-          error
-            ? "border-danger-700 focus:border-danger-700 focus:ring-1 focus:ring-danger-700"
-            : "border-slate-300 focus:border-brand-700 focus:ring-1 focus:ring-brand-700"
-        } ${className}`}
-      />
-      {error && <p className="text-xs text-danger-700 mt-1">{error}</p>}
-      {!error && helperText && <p className="text-xs text-slate-500 mt-1">{helperText}</p>}
+      {label && (
+        <label htmlFor={inputId} className="block text-xs font-medium text-content-secondary tracking-wide">
+          {label} {required && <span className="text-accent">*</span>}
+        </label>
+      )}
+      <div className="relative flex items-center">
+        {leftIcon && (
+          <div className="absolute left-3 text-content-muted pointer-events-none flex items-center">
+            {leftIcon}
+          </div>
+        )}
+        <input
+          id={inputId}
+          required={required}
+          {...props}
+          className={`w-full h-10 bg-surface-card border rounded-btn text-sm text-content-primary placeholder:text-content-muted focus:outline-none transition-all duration-150 ${
+            leftIcon ? "pl-9" : "px-3"
+          } ${rightIcon ? "pr-9" : "px-3"} ${
+            error
+              ? "border-error focus:border-error focus:ring-1 focus:ring-error/50"
+              : "border-border hover:border-border-strong focus:border-accent focus:ring-1 focus:ring-accent/40"
+          } ${className}`}
+        />
+        {rightIcon && (
+          <div className="absolute right-3 text-content-muted pointer-events-none flex items-center">
+            {rightIcon}
+          </div>
+        )}
+      </div>
+      {error && <p className="text-xs text-error mt-1">{error}</p>}
+      {!error && helperText && <p className="text-xs text-content-muted mt-1">{helperText}</p>}
     </div>
   );
 }
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label: string;
+  label?: string;
   error?: string;
   helperText?: string;
 }
@@ -54,26 +74,71 @@ export function Textarea({
   rows = 3,
   ...props
 }: TextareaProps) {
-  const textareaId = id || `textarea_${label.toLowerCase().replace(/\s+/g, "_")}`;
+  const textareaId = id || (label ? `textarea_${label.toLowerCase().replace(/\s+/g, "_")}` : undefined);
 
   return (
     <div className="w-full space-y-1.5">
-      <label htmlFor={textareaId} className="block text-xs font-semibold text-slate-700">
-        {label} {required && <span className="text-danger-700">*</span>}
-      </label>
+      {label && (
+        <label htmlFor={textareaId} className="block text-xs font-medium text-content-secondary tracking-wide">
+          {label} {required && <span className="text-accent">*</span>}
+        </label>
+      )}
       <textarea
         id={textareaId}
         required={required}
         rows={rows}
         {...props}
-        className={`w-full p-3 bg-white border rounded-btn text-sm text-slate-950 placeholder-slate-400 focus:outline-none transition-colors ${
+        className={`w-full px-3 py-2 bg-surface-card border rounded-btn text-sm text-content-primary placeholder:text-content-muted focus:outline-none transition-all duration-150 ${
           error
-            ? "border-danger-700 focus:border-danger-700 focus:ring-1 focus:ring-danger-700"
-            : "border-slate-300 focus:border-brand-700 focus:ring-1 focus:ring-brand-700"
+            ? "border-error focus:border-error focus:ring-1 focus:ring-error/50"
+            : "border-border hover:border-border-strong focus:border-accent focus:ring-1 focus:ring-accent/40"
         } ${className}`}
       />
-      {error && <p className="text-xs text-danger-700 mt-1">{error}</p>}
-      {!error && helperText && <p className="text-xs text-slate-500 mt-1">{helperText}</p>}
+      {error && <p className="text-xs text-error mt-1">{error}</p>}
+      {!error && helperText && <p className="text-xs text-content-muted mt-1">{helperText}</p>}
+    </div>
+  );
+}
+
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  error?: string;
+  helperText?: string;
+}
+
+export function Select({
+  label,
+  error,
+  helperText,
+  id,
+  children,
+  className = "",
+  required,
+  ...props
+}: SelectProps) {
+  const selectId = id || (label ? `select_${label.toLowerCase().replace(/\s+/g, "_")}` : undefined);
+
+  return (
+    <div className="w-full space-y-1.5">
+      {label && (
+        <label htmlFor={selectId} className="block text-xs font-medium text-content-secondary tracking-wide">
+          {label} {required && <span className="text-accent">*</span>}
+        </label>
+      )}
+      <select
+        id={selectId}
+        required={required}
+        {...props}
+        className={`w-full h-10 px-3 bg-surface-card border rounded-btn text-sm text-content-primary focus:outline-none transition-all duration-150 ${
+          error
+            ? "border-error focus:border-error focus:ring-1 focus:ring-error/50"
+            : "border-border hover:border-border-strong focus:border-accent focus:ring-1 focus:ring-accent/40"
+        } ${className}`}
+      >
+        {children}
+      </select>
+      {error && <p className="text-xs text-error mt-1">{error}</p>}
+      {!error && helperText && <p className="text-xs text-content-muted mt-1">{helperText}</p>}
     </div>
   );
 }

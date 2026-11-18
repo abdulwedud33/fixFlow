@@ -14,13 +14,23 @@ import {
   CheckCircle2,
   AlertCircle,
   Plus,
+  User,
+  Smartphone,
+  Calendar,
+  Layers,
+  FileText,
+  CreditCard,
+  ChevronRight,
+  Send,
+  Eye,
+  Lock,
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { formatETB, formatDateTime, formatEthiopianPhone } from "@/lib/format";
 import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
-import { DetailsSkeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
+import { CardSkeleton, TableSkeleton } from "@/components/ui/Skeleton";
 import {
   RepairStatus,
   ALLOWED_TRANSITIONS,
@@ -63,7 +73,6 @@ export default function RepairDetailPage() {
 
   useEffect(() => {
     loadTicket();
-    // Load inventory parts
     apiRequest("/inventory").then((res) => {
       if (res.data) setAvailableParts(res.data);
     });
@@ -174,32 +183,48 @@ export default function RepairDetailPage() {
   };
 
   if (isLoading || !ticket) {
-    return <DetailsSkeleton />;
+    return (
+      <div className="space-y-6 max-w-5xl mx-auto">
+        <div className="flex justify-between items-center">
+          <div className="h-8 w-48 bg-surface-card rounded animate-pulse" />
+          <div className="h-8 w-24 bg-surface-card rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 space-y-4">
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
+          <div className="space-y-4">
+            <CardSkeleton />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const allowedNextStatuses = ALLOWED_TRANSITIONS[ticket.status as RepairStatus] || [];
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Top Navigation & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Header & Work Order Summary */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
         <div className="flex items-center space-x-3">
           <Link
             href="/repairs"
-            className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 rounded-full transition-colors"
+            className="p-2 text-content-muted hover:text-content-primary hover:bg-surface-card rounded-btn transition-colors border border-border"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
-            <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-mono font-bold text-ink-950 tracking-tight">
+            <div className="flex items-center space-x-2.5">
+              <h1 className="text-xl sm:text-2xl font-mono font-bold text-accent tracking-tight">
                 {ticket.ticketNumber}
               </h1>
               <StatusBadge status={ticket.status} />
               <PriorityBadge priority={ticket.priority} />
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Intake recorded {formatDateTime(ticket.receivedAt)}
+            <p className="text-xs font-mono text-content-muted mt-0.5">
+              Received {formatDateTime(ticket.receivedAt)} • {ticket.customer?.fullName}
             </p>
           </div>
         </div>
@@ -208,36 +233,42 @@ export default function RepairDetailPage() {
           <Link
             href={`/receipts/${ticket.id}`}
             target="_blank"
-            className="h-10 px-3.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-btn text-xs font-semibold inline-flex items-center space-x-1.5 transition-colors shadow-sm"
+            className="h-9 px-3.5 bg-surface-card border border-border hover:border-border-strong text-content-primary rounded-btn text-xs font-medium inline-flex items-center space-x-1.5 transition-colors shadow-sm"
           >
-            <Printer className="w-4 h-4 text-slate-500" />
+            <Printer className="w-3.5 h-3.5 text-accent" />
             <span>Print Receipt</span>
           </Link>
         </div>
       </div>
 
       {transitionError && (
-        <div className="p-3 bg-danger-50 border border-red-200 text-danger-700 rounded-btn text-xs font-medium flex items-center space-x-2">
+        <div className="p-3 bg-error-muted border border-error/40 text-error rounded-card text-xs flex items-center space-x-2">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span>{transitionError}</span>
         </div>
       )}
 
-      {/* Status Lifecycle Transition Action Bar */}
+      {/* Finite State Machine Status Transition Controller */}
       {allowedNextStatuses.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
-          <div className="text-xs text-slate-600">
-            <span className="font-semibold text-slate-900">Current Status:</span> {ticket.status}
+        <div className="bg-surface-card border border-border rounded-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-card-dark">
+          <div className="text-xs">
+            <span className="text-content-muted font-mono uppercase tracking-wider text-[11px] block">
+              Workbench Lifecycle
+            </span>
+            <span className="font-semibold text-content-primary">
+              Current: {ticket.status.replace(/_/g, " ")}
+            </span>
           </div>
+
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-slate-500 mr-1">Move to:</span>
+            <span className="text-xs text-content-muted font-mono">Transition to:</span>
             {allowedNextStatuses.map((st) => (
               <Button
                 key={st}
                 variant={st === RepairStatus.CANCELLED ? "destructive" : "primary"}
-                size="sm"
+                size="xs"
                 isLoading={isTransitioning}
-                loadingText="Updating..."
+                loadingText="Updating state..."
                 onClick={() => handleStatusTransition(st)}
               >
                 {st.replace(/_/g, " ")}
@@ -247,14 +278,14 @@ export default function RepairDetailPage() {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex space-x-1 border-b border-slate-200 overflow-x-auto">
+      {/* Tab Navigation */}
+      <div className="flex space-x-1 border-b border-border overflow-x-auto">
         {[
-          { key: "overview", label: "Overview & Intake", icon: Wrench },
+          { key: "overview", label: "Overview & Diagnostics", icon: Wrench },
           { key: "notes", label: `Work Notes (${ticket.notes?.length || 0})`, icon: Clock },
-          { key: "payments", label: `Payments & Balance`, icon: DollarSign },
-          { key: "parts", label: `Parts Used (${ticket.partUsages?.length || 0})`, icon: Package },
-          { key: "warranty", label: "Warranty", icon: ShieldCheck },
+          { key: "payments", label: `Payments (${formatETB(ticket.totalPaid)})`, icon: DollarSign },
+          { key: "parts", label: `Parts Consumed (${ticket.partUsages?.length || 0})`, icon: Package },
+          { key: "warranty", label: "Warranty Certificate", icon: ShieldCheck },
         ].map((tab) => {
           const isActive = activeTab === tab.key;
           const Icon = tab.icon;
@@ -262,10 +293,10 @@ export default function RepairDetailPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`flex items-center space-x-2 px-4 py-3 text-xs font-semibold border-b-2 whitespace-nowrap transition-colors ${
+              className={`flex items-center space-x-2 px-3.5 py-2.5 text-xs font-medium border-b-2 whitespace-nowrap transition-colors ${
                 isActive
-                  ? "border-brand-700 text-brand-700"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  ? "border-accent text-accent font-semibold"
+                  : "border-transparent text-content-secondary hover:text-content-primary"
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -280,22 +311,22 @@ export default function RepairDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
             {/* Reported Issue & Condition */}
-            <div className="bg-white border border-slate-200 rounded-card p-5 space-y-4 shadow-sm">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Reported Issue
+            <div className="bg-surface-card border border-border rounded-card p-5 space-y-4">
+              <h3 className="text-xs font-mono uppercase tracking-wider text-content-muted font-medium">
+                Customer Problem Description
               </h3>
-              <p className="text-sm text-slate-900 bg-slate-50 p-3 rounded border border-slate-200">
+              <p className="text-sm text-content-primary bg-surface p-3.5 rounded-btn border border-border/70 leading-relaxed">
                 {ticket.reportedIssue}
               </p>
 
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider pt-2">
+              <h3 className="text-xs font-mono uppercase tracking-wider text-content-muted font-medium pt-2">
                 Physical Condition on Intake
               </h3>
-              <p className="text-sm text-slate-700">
-                {ticket.conditionOnIntake || "No visible defects noted"}
+              <p className="text-sm text-content-secondary">
+                {ticket.conditionOnIntake || "No visible physical defects noted at intake"}
               </p>
 
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider pt-2">
+              <h3 className="text-xs font-mono uppercase tracking-wider text-content-muted font-medium pt-2">
                 Accessories Received
               </h3>
               <div className="flex flex-wrap gap-1.5">
@@ -303,35 +334,39 @@ export default function RepairDetailPage() {
                   ticket.accessoriesReceived.map((acc: string) => (
                     <span
                       key={acc}
-                      className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-btn text-xs font-medium border border-slate-200"
+                      className="px-2.5 py-1 bg-surface border border-border text-content-primary rounded-btn text-xs font-mono"
                     >
                       {acc}
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-slate-400">Device only (no accessories)</span>
+                  <span className="text-xs text-content-muted font-mono">
+                    Device only (no accessories left)
+                  </span>
                 )}
               </div>
             </div>
 
-            {/* Status Timeline */}
-            <div className="bg-white border border-slate-200 rounded-card p-5 space-y-3 shadow-sm">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Status History
+            {/* Audit History Timeline */}
+            <div className="bg-surface-card border border-border rounded-card p-5 space-y-3">
+              <h3 className="text-xs font-mono uppercase tracking-wider text-content-muted font-medium">
+                State Transition Audit Trail
               </h3>
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-border/60">
                 {ticket.events?.map((ev: any) => (
                   <div key={ev.id} className="py-2.5 flex items-center justify-between text-xs">
                     <div>
-                      <span className="font-semibold text-slate-900">
+                      <span className="font-semibold text-content-primary">
                         {ev.toStatus.replace(/_/g, " ")}
                       </span>
-                      {ev.reason && <span className="text-slate-500"> — {ev.reason}</span>}
-                      <span className="block text-[11px] text-slate-400">
-                        By {ev.actorDisplayName}
+                      {ev.reason && <span className="text-content-secondary"> — {ev.reason}</span>}
+                      <span className="block text-[11px] font-mono text-content-muted">
+                        Recorded by {ev.actorDisplayName}
                       </span>
                     </div>
-                    <span className="text-slate-400">{formatDateTime(ev.createdAt)}</span>
+                    <span className="font-mono text-content-muted text-[11px]">
+                      {formatDateTime(ev.createdAt)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -341,71 +376,80 @@ export default function RepairDetailPage() {
           {/* Right Column: Customer & Device Cards */}
           <div className="space-y-6">
             {/* Customer Details */}
-            <div className="bg-white border border-slate-200 rounded-card p-5 space-y-3 shadow-sm">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Customer</h3>
+            <div className="bg-surface-card border border-border rounded-card p-5 space-y-3">
+              <div className="flex items-center space-x-2 text-content-muted">
+                <User className="w-4 h-4 text-accent" />
+                <h3 className="text-xs font-mono uppercase tracking-wider font-medium">Customer</h3>
+              </div>
               <div>
-                <p className="font-semibold text-slate-900">{ticket.customer?.fullName}</p>
-                <p className="text-xs text-slate-600 mt-0.5">
+                <p className="font-semibold text-content-primary text-sm">{ticket.customer?.fullName}</p>
+                <p className="text-xs font-mono text-accent mt-0.5">
                   {formatEthiopianPhone(ticket.customer?.phone)}
                 </p>
                 {ticket.customer?.email && (
-                  <p className="text-xs text-slate-500">{ticket.customer.email}</p>
+                  <p className="text-xs text-content-muted mt-0.5">{ticket.customer.email}</p>
                 )}
               </div>
             </div>
 
-            {/* Device Details */}
-            <div className="bg-white border border-slate-200 rounded-card p-5 space-y-3 shadow-sm">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Device</h3>
-              <div className="text-xs space-y-1.5 text-slate-700">
-                <p>
-                  <span className="text-slate-500">Brand:</span>{" "}
-                  <span className="font-semibold text-slate-900">{ticket.device?.brand}</span>
-                </p>
-                <p>
-                  <span className="text-slate-500">Model:</span>{" "}
-                  <span className="font-semibold text-slate-900">{ticket.device?.model}</span>
-                </p>
+            {/* Device Hardware Details */}
+            <div className="bg-surface-card border border-border rounded-card p-5 space-y-3">
+              <div className="flex items-center space-x-2 text-content-muted">
+                <Smartphone className="w-4 h-4 text-sky" />
+                <h3 className="text-xs font-mono uppercase tracking-wider font-medium">Hardware Spec</h3>
+              </div>
+              <div className="text-xs space-y-2 text-content-secondary">
+                <div className="flex justify-between">
+                  <span className="text-content-muted">Brand:</span>
+                  <span className="font-medium text-content-primary">{ticket.device?.brand}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-content-muted">Model:</span>
+                  <span className="font-medium text-content-primary">{ticket.device?.model}</span>
+                </div>
                 {ticket.device?.color && (
-                  <p>
-                    <span className="text-slate-500">Color:</span> {ticket.device.color}
-                  </p>
+                  <div className="flex justify-between">
+                    <span className="text-content-muted">Color:</span>
+                    <span className="text-content-primary">{ticket.device.color}</span>
+                  </div>
                 )}
                 {ticket.device?.imei && (
-                  <p>
-                    <span className="text-slate-500">IMEI:</span> {ticket.device.imei}
-                  </p>
+                  <div className="flex justify-between">
+                    <span className="text-content-muted">IMEI / SN:</span>
+                    <span className="font-mono text-content-primary">{ticket.device.imei}</span>
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Assignment & Costs */}
-            <div className="bg-white border border-slate-200 rounded-card p-5 space-y-3 shadow-sm">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Bench Assignment
+            {/* Financial Reconciliation Summary */}
+            <div className="bg-surface-card border border-border rounded-card p-5 space-y-3">
+              <h3 className="text-xs font-mono uppercase tracking-wider text-content-muted font-medium">
+                Financial Status
               </h3>
-              <p className="text-xs text-slate-800">
-                {ticket.assignedTechnician
-                  ? `Assigned to: ${ticket.assignedTechnician.displayName}`
-                  : "Unassigned"}
-              </p>
-              <div className="pt-3 border-t border-slate-100 flex justify-between text-xs">
-                <span className="text-slate-500">Total Cost:</span>
-                <span className="font-bold text-slate-900">{formatETB(ticket.totalCost)}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-500">Paid so far:</span>
-                <span className="font-bold text-teal-700">{formatETB(ticket.totalPaid)}</span>
-              </div>
-              <div className="flex justify-between text-xs pt-1 border-t border-slate-100">
-                <span className="font-semibold text-slate-700">Balance:</span>
-                <span
-                  className={`font-bold ${
-                    ticket.balance > 0 ? "text-amber-700" : "text-teal-700"
-                  }`}
-                >
-                  {formatETB(ticket.balance)}
-                </span>
+              <div className="space-y-2 pt-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-content-muted">Quoted Cost:</span>
+                  <span className="font-mono font-medium text-content-primary">
+                    {formatETB(ticket.totalCost)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-content-muted">Paid So Far:</span>
+                  <span className="font-mono font-medium text-accent">
+                    {formatETB(ticket.totalPaid)}
+                  </span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-border">
+                  <span className="font-medium text-content-primary">Remaining Due:</span>
+                  <span
+                    className={`font-mono font-bold text-sm ${
+                      ticket.balance > 0 ? "text-warning" : "text-success"
+                    }`}
+                  >
+                    {formatETB(ticket.balance)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -417,38 +461,39 @@ export default function RepairDetailPage() {
         <div className="space-y-6">
           <form
             onSubmit={handleAddNote}
-            className="bg-white border border-slate-200 rounded-card p-5 space-y-3 shadow-sm"
+            className="bg-surface-card border border-border rounded-card p-5 space-y-3"
           >
-            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Add Work Note / Diagnosis
+            <h3 className="text-xs font-mono uppercase tracking-wider text-content-muted font-medium">
+              Record Bench Work Note or Diagnosis
             </h3>
             <Textarea
-              label="Note Body"
-              placeholder="Record diagnostic findings, repair progress, or instructions..."
+              placeholder="Record diagnostic findings, testing steps, or instructions..."
               value={noteBody}
               onChange={(e) => setNoteBody(e.target.value)}
               rows={2}
             />
             <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center space-x-3 text-xs">
-                <label className="flex items-center space-x-1 cursor-pointer">
+              <div className="flex items-center space-x-4 text-xs">
+                <label className="flex items-center space-x-1.5 cursor-pointer text-content-secondary">
                   <input
                     type="radio"
                     checked={noteType === "internal"}
                     onChange={() => setNoteType("internal")}
+                    className="text-accent"
                   />
                   <span>Internal Staff Only</span>
                 </label>
-                <label className="flex items-center space-x-1 cursor-pointer">
+                <label className="flex items-center space-x-1.5 cursor-pointer text-content-secondary">
                   <input
                     type="radio"
                     checked={noteType === "customer_visible"}
                     onChange={() => setNoteType("customer_visible")}
+                    className="text-accent"
                   />
                   <span>Customer Visible (on Public Tracking)</span>
                 </label>
               </div>
-              <Button type="submit" size="sm" isLoading={isAddingNote} loadingText="Saving...">
+              <Button type="submit" size="xs" isLoading={isAddingNote} loadingText="Saving...">
                 Save Note
               </Button>
             </div>
@@ -457,29 +502,35 @@ export default function RepairDetailPage() {
           {/* Notes list */}
           <div className="space-y-3">
             {ticket.notes?.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-6">No work notes yet.</p>
+              <p className="text-xs font-mono text-content-muted text-center py-8">
+                No diagnostic notes recorded yet.
+              </p>
             ) : (
               ticket.notes?.map((n: any) => (
                 <div
                   key={n.id}
-                  className="bg-white border border-slate-200 rounded-card p-4 space-y-1.5 shadow-sm"
+                  className="bg-surface-card border border-border rounded-card p-4 space-y-2"
                 >
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-slate-900">{n.authorDisplayName}</span>
+                    <span className="font-semibold text-content-primary">
+                      {n.authorDisplayName}
+                    </span>
                     <div className="flex items-center space-x-2">
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                        className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
                           n.noteType === "customer_visible"
-                            ? "bg-teal-50 text-teal-700 border border-teal-200"
-                            : "bg-slate-100 text-slate-600 border border-slate-200"
+                            ? "bg-accent-muted text-accent border border-accent/20"
+                            : "bg-surface border border-border text-content-muted"
                         }`}
                       >
                         {n.noteType === "customer_visible" ? "Customer Visible" : "Internal"}
                       </span>
-                      <span className="text-slate-400">{formatDateTime(n.createdAt)}</span>
+                      <span className="text-[11px] font-mono text-content-muted">
+                        {formatDateTime(n.createdAt)}
+                      </span>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-800">{n.body}</p>
+                  <p className="text-sm text-content-secondary leading-relaxed">{n.body}</p>
                 </div>
               ))
             )}
@@ -491,20 +542,20 @@ export default function RepairDetailPage() {
       {activeTab === "payments" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Record payment form */}
-          <div className="bg-white border border-slate-200 rounded-card p-5 space-y-4 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Record Payment
+          <div className="bg-surface-card border border-border rounded-card p-5 space-y-4">
+            <h3 className="text-xs font-mono uppercase tracking-wider text-content-muted font-medium">
+              Record Customer Payment
             </h3>
 
             {paymentError && (
-              <div className="p-2.5 bg-danger-50 text-danger-700 rounded text-xs">
+              <div className="p-2.5 bg-error-muted border border-error/30 text-error rounded text-xs">
                 {paymentError}
               </div>
             )}
 
             <form onSubmit={handleRecordPayment} className="space-y-3">
               <Input
-                label="Amount (ETB)"
+                label="Payment Amount (ETB)"
                 type="number"
                 min="1"
                 step="any"
@@ -515,24 +566,24 @@ export default function RepairDetailPage() {
               />
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-content-secondary mb-1">
                   Payment Method
                 </label>
                 <select
                   value={payMethod}
                   onChange={(e) => setPayMethod(e.target.value)}
-                  className="w-full h-11 px-3 bg-white border border-slate-300 rounded-btn text-sm"
+                  className="w-full h-10 px-3 bg-surface-card border border-border hover:border-border-strong rounded-btn text-sm text-content-primary focus:outline-none focus:border-accent"
                 >
-                  <option value={PaymentMethod.CASH}>Cash</option>
-                  <option value={PaymentMethod.MOBILE_MONEY}>Mobile Money (Telebirr / CBE)</option>
+                  <option value={PaymentMethod.CASH}>Cash (Physical Birr)</option>
+                  <option value={PaymentMethod.MOBILE_MONEY}>Telebirr / CBE Birr</option>
                   <option value={PaymentMethod.BANK_TRANSFER}>Bank Transfer</option>
-                  <option value={PaymentMethod.CARD}>Card</option>
+                  <option value={PaymentMethod.CARD}>Debit / Credit Card</option>
                 </select>
               </div>
 
               <Input
                 label="Transaction Reference # (Optional)"
-                placeholder="e.g. Telebirr TX # or Slip #"
+                placeholder="e.g. Telebirr TX ID, CBE Slip #"
                 value={payReference}
                 onChange={(e) => setPayReference(e.target.value)}
               />
@@ -541,7 +592,7 @@ export default function RepairDetailPage() {
                 type="submit"
                 variant="primary"
                 isLoading={isRecordingPayment}
-                loadingText="Recording..."
+                loadingText="Recording to ledger..."
                 className="w-full"
               >
                 Record Payment
@@ -550,16 +601,16 @@ export default function RepairDetailPage() {
           </div>
 
           {/* Ledger history */}
-          <div className="md:col-span-2 bg-white border border-slate-200 rounded-card p-5 space-y-4 shadow-sm">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-200">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Payment History (Append-Only Ledger)
+          <div className="md:col-span-2 bg-surface-card border border-border rounded-card p-5 space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-border">
+              <h3 className="text-xs font-mono uppercase tracking-wider text-content-muted font-medium">
+                Append-Only Financial Ledger
               </h3>
               <div className="text-right">
-                <span className="text-xs text-slate-500">Remaining Balance: </span>
+                <span className="text-xs text-content-muted font-mono">Remaining: </span>
                 <span
-                  className={`font-bold text-sm ${
-                    ticket.balance > 0 ? "text-amber-700" : "text-teal-700"
+                  className={`font-mono font-bold text-sm ${
+                    ticket.balance > 0 ? "text-warning" : "text-success"
                   }`}
                 >
                   {formatETB(ticket.balance)}
@@ -568,33 +619,29 @@ export default function RepairDetailPage() {
             </div>
 
             {ticket.payments?.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-6">
-                No payments recorded yet for this repair.
+              <p className="text-xs font-mono text-content-muted text-center py-8">
+                No payment entries recorded yet.
               </p>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-border/60">
                 {ticket.payments?.map((p: any) => (
                   <div key={p.id} className="py-3 flex items-center justify-between text-xs">
                     <div>
-                      <span className="font-bold text-sm text-slate-900 block">
+                      <span className="font-mono font-bold text-sm text-accent block">
                         {formatETB(p.amount)}
                       </span>
-                      <span className="text-slate-500 capitalize">{p.method.replace(/_/g, " ")}</span>
+                      <span className="text-content-secondary capitalize">
+                        {p.method.replace(/_/g, " ")}
+                      </span>
                       {p.reference && (
-                        <span className="text-slate-400"> (Ref: {p.reference})</span>
+                        <span className="text-content-muted font-mono"> (Ref: {p.reference})</span>
                       )}
                     </div>
                     <div className="text-right">
-                      <span
-                        className={`inline-flex px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
-                          p.status === "recorded"
-                            ? "bg-teal-50 text-teal-700"
-                            : "bg-danger-50 text-danger-700"
-                        }`}
-                      >
+                      <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase bg-accent-muted text-accent border border-accent/20">
                         {p.status}
                       </span>
-                      <span className="block text-[11px] text-slate-400 mt-0.5">
+                      <span className="block text-[11px] font-mono text-content-muted mt-0.5">
                         {formatDateTime(p.recordedAt)}
                       </span>
                     </div>
@@ -611,23 +658,23 @@ export default function RepairDetailPage() {
         <div className="space-y-6">
           <form
             onSubmit={handleConsumePart}
-            className="bg-white border border-slate-200 rounded-card p-5 space-y-4 shadow-sm"
+            className="bg-surface-card border border-border rounded-card p-5 space-y-4"
           >
-            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Issue Part from Inventory
+            <h3 className="text-xs font-mono uppercase tracking-wider text-content-muted font-medium">
+              Consume Spare Part from Inventory
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Select Part from Inventory
+                <label className="block text-xs font-medium text-content-secondary mb-1">
+                  Select Stock Item
                 </label>
                 <select
                   value={selectedPartId}
                   onChange={(e) => setSelectedPartId(e.target.value)}
-                  className="w-full h-11 px-3 bg-white border border-slate-300 rounded-btn text-sm"
+                  className="w-full h-10 px-3 bg-surface-card border border-border hover:border-border-strong rounded-btn text-sm text-content-primary focus:outline-none focus:border-accent"
                   required
                 >
-                  <option value="">Choose a part...</option>
+                  <option value="">Choose item from warehouse...</option>
                   {availableParts.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name} ({p.sku}) — In Stock: {p.currentQuantity} {p.unit}
@@ -637,7 +684,7 @@ export default function RepairDetailPage() {
               </div>
 
               <Input
-                label="Quantity"
+                label="Quantity Needed"
                 type="number"
                 min="1"
                 required
@@ -648,32 +695,36 @@ export default function RepairDetailPage() {
 
             <Button
               type="submit"
-              size="sm"
+              size="xs"
               isLoading={isConsumingPart}
               loadingText="Deducting from inventory..."
             >
-              Consume Part for Repair
+              Issue Part to Ticket
             </Button>
           </form>
 
           {/* Consumed parts list */}
-          <div className="bg-white border border-slate-200 rounded-card p-5 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              Parts Attached to this Ticket
+          <div className="bg-surface-card border border-border rounded-card p-5">
+            <h3 className="text-xs font-mono uppercase tracking-wider text-content-muted font-medium mb-3">
+              Parts Attached to this Work Order
             </h3>
             {ticket.partUsages?.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-4">No parts consumed yet.</p>
+              <p className="text-xs font-mono text-content-muted text-center py-6">
+                No spare parts consumed yet.
+              </p>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-border/60">
                 {ticket.partUsages?.map((u: any) => (
                   <div key={u.id} className="py-2.5 flex justify-between text-xs">
                     <div>
-                      <span className="font-semibold text-slate-900">{u.partName}</span>
-                      <span className="text-slate-400 block font-mono">{u.partSku}</span>
+                      <span className="font-semibold text-content-primary">{u.partName}</span>
+                      <span className="text-content-muted block font-mono text-[11px]">{u.partSku}</span>
                     </div>
                     <div className="text-right">
-                      <span className="font-medium text-slate-800">Qty: {u.quantity}</span>
-                      <span className="block text-slate-500">{formatETB(u.unitCost)} each</span>
+                      <span className="font-mono text-content-primary">Qty: {u.quantity}</span>
+                      <span className="block font-mono text-content-muted text-[11px]">
+                        {formatETB(u.unitCost)} each
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -685,35 +736,37 @@ export default function RepairDetailPage() {
 
       {/* Tab 5: Warranty */}
       {activeTab === "warranty" && (
-        <div className="bg-white border border-slate-200 rounded-card p-5 space-y-4 shadow-sm max-w-xl">
-          <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Warranty Certificate
+        <div className="bg-surface-card border border-border rounded-card p-5 space-y-4 max-w-xl">
+          <h3 className="text-xs font-mono uppercase tracking-wider text-content-muted font-medium">
+            Service Warranty Certificate
           </h3>
 
           {ticket.warranty ? (
-            <div className="space-y-2 text-xs text-slate-700 p-4 bg-teal-50/50 border border-teal-200 rounded-btn">
-              <div className="flex items-center space-x-1.5 text-teal-700 font-bold text-sm">
+            <div className="space-y-2.5 text-xs text-content-secondary p-4 bg-surface border border-accent/30 rounded-card">
+              <div className="flex items-center space-x-2 text-accent font-bold text-sm">
                 <ShieldCheck className="w-5 h-5" />
-                <span>Active Warranty</span>
+                <span>Active Warranty Protection</span>
               </div>
               <p>
-                <span className="text-slate-500">Valid From:</span>{" "}
-                {formatDateTime(ticket.warranty.startsAt)}
-              </p>
-              <p>
-                <span className="text-slate-500">Expires:</span>{" "}
-                <span className="font-semibold text-slate-900">
-                  {formatDateTime(ticket.warranty.endsAt)}
+                <span className="text-content-muted">Valid From:</span>{" "}
+                <span className="font-mono text-content-primary">
+                  {formatDateTime(ticket.warranty.startsAt)}
                 </span>
               </p>
               <p>
-                <span className="text-slate-500">Coverage Terms:</span> {ticket.warranty.terms}
+                <span className="text-content-muted">Expiration Date:</span>{" "}
+                <span className="font-mono font-semibold text-content-primary">
+                  {formatDateTime(ticket.warranty.endsAt)}
+                </span>
+              </p>
+              <p className="pt-2 border-t border-border text-[11px] text-content-muted">
+                Terms: {ticket.warranty.terms}
               </p>
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-xs text-slate-500">
-                Issue a service warranty certificate for the work completed on this device.
+              <p className="text-xs text-content-secondary">
+                Issue a service warranty certificate for the labor and replacement components fitted to this device.
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <Input

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { apiRequest, setAuthToken } from "@/lib/api";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Lock, User, Sparkles, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,23 +40,33 @@ export default function LoginPage() {
     }
   };
 
+  const fillDemoCredentials = () => {
+    setIdentifier("owner@example.com");
+    setPassword("Password123!");
+  };
+
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-slate-50">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-card p-6 sm:p-8 shadow-sm">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-btn bg-brand-700 text-white font-bold flex items-center justify-center mx-auto text-xl mb-3">
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-canvas bg-grid-pattern relative">
+      <div className="w-full max-w-md bg-surface-card border border-border shadow-modal-dark rounded-xl p-6 sm:p-8 space-y-6 relative z-10">
+        {/* Brand Header */}
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 rounded-xl bg-surface border border-accent/40 text-accent font-mono font-bold flex items-center justify-center mx-auto text-lg shadow-glow-accent">
             FF
           </div>
-          <h1 className="text-2xl font-bold text-ink-950 tracking-tight">Sign in to FixFlow</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Independent repair management platform
-          </p>
+          <div>
+            <h1 className="text-2xl font-bold text-content-primary tracking-tight">
+              Sign In to FixFlow
+            </h1>
+            <p className="text-xs text-content-secondary mt-1">
+              Precision Repair Operations Platform
+            </p>
+          </div>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-danger-50 border border-red-200 text-danger-700 rounded-btn text-xs font-medium">
-            {error}
+          <div className="p-3.5 bg-error-muted border border-error/40 text-error rounded-card text-xs flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
@@ -65,8 +75,9 @@ export default function LoginPage() {
             label="Phone Number or Email"
             type="text"
             required
-            placeholder="e.g. 0912345678 or owner@shop.et"
+            placeholder="e.g. 0911223344 or owner@shop.et"
             value={identifier}
+            leftIcon={<User className="w-4 h-4" />}
             onChange={(e) => setIdentifier(e.target.value)}
           />
 
@@ -76,6 +87,7 @@ export default function LoginPage() {
             required
             placeholder="••••••••"
             value={password}
+            leftIcon={<Lock className="w-4 h-4" />}
             onChange={(e) => setPassword(e.target.value)}
           />
 
@@ -84,30 +96,42 @@ export default function LoginPage() {
               type="submit"
               variant="primary"
               isLoading={isLoading}
-              loadingText="Signing in..."
+              loadingText="Authenticating..."
               className="w-full"
             >
-              Sign In
+              Authenticate & Enter Bench
             </Button>
           </div>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-slate-100 text-center space-y-3">
-          <p className="text-xs text-slate-600">
-            Don't have a shop account?{" "}
-            <Link href="/register" className="text-brand-700 font-semibold hover:underline">
-              Register Shop
+        {/* Demo Fast-fill button for testing */}
+        <div className="p-3 bg-surface border border-border/80 rounded-btn flex items-center justify-between text-xs">
+          <span className="text-content-secondary font-mono text-[11px]">Testing demo account?</span>
+          <button
+            type="button"
+            onClick={fillDemoCredentials}
+            className="text-accent hover:underline font-mono text-[11px] font-semibold flex items-center space-x-1"
+          >
+            <Sparkles className="w-3 h-3 mr-0.5" />
+            <span>Fill Demo Credentials</span>
+          </button>
+        </div>
+
+        <div className="pt-4 border-t border-border text-center space-y-2">
+          <p className="text-xs text-content-secondary">
+            New shop owner?{" "}
+            <Link href="/register" className="text-accent font-semibold hover:underline">
+              Register Repair Business
             </Link>
           </p>
-          <div>
-            <Link
-              href="/track"
-              className="inline-flex items-center space-x-1 text-xs text-slate-500 hover:text-slate-800"
-            >
-              <span>Customer looking for a repair status? Track here</span>
-              <ExternalLink className="w-3 h-3" />
-            </Link>
-          </div>
+
+          <Link
+            href="/track"
+            className="text-[11px] font-mono text-content-muted hover:text-content-primary inline-flex items-center space-x-1"
+          >
+            <span>Customer Looking for Device Status?</span>
+            <ExternalLink className="w-3 h-3 ml-0.5" />
+          </Link>
         </div>
       </div>
     </div>
