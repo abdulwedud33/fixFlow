@@ -112,7 +112,7 @@ export function Shell({ children }: ShellProps) {
 
       {/* Desktop Sidebar */}
       <aside
-        className={`hidden md:flex flex-col border-r border-border bg-surface-sidebar transition-all duration-200 flex-shrink-0 z-30 ${
+        className={`hidden md:flex flex-col border-r border-border bg-surface-sidebar transition-all duration-200 flex-shrink-0 z-30 h-screen sticky top-0 ${
           sidebarCollapsed ? "w-16" : "w-64"
         }`}
       >
