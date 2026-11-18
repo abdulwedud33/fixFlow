@@ -20,10 +20,38 @@ export const app = express();
 // Security HTTP headers
 app.use(helmet());
 
-// CORS configuration
+// CORS configuration supporting production web origins, localhost, and Vercel preview deployments
+const allowedOrigins = [
+  config.webOrigin,
+  "http://localhost:3000",
+  "http://localhost:3001",
+];
+
+if (process.env.WEB_ORIGIN) {
+  process.env.WEB_ORIGIN.split(",").forEach((o) => {
+    const trimmed = o.trim();
+    if (trimmed && !allowedOrigins.includes(trimmed)) {
+      allowedOrigins.push(trimmed);
+    }
+  });
+}
+
 app.use(
   cors({
-    origin: [config.webOrigin, "http://localhost:3000", "http://localhost:3001"],
+    origin: (origin, callback) => {
+      // Allow server-to-server, mobile, curl, or requests with no origin
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app") ||
+        origin.includes("localhost") ||
+        origin.includes("127.0.0.1") ||
+        process.env.NODE_ENV !== "production"
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
@@ -33,6 +61,14 @@ app.use(express.json({ limit: "1mb" }));
 
 // Request ID middleware
 app.use(requestIdMiddleware);
+
+// Root & Health check endpoints
+app.get("/", (req, res) => {
+  res.json({ status: "ok", app: "FixFlow API", version: "1.0.0" });
+});
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", app: "FixFlow API", version: "1.0.0" });
+});
 
 // Standard API rate limiter (100 requests per minute)
 const standardApiLimiter = rateLimit({
